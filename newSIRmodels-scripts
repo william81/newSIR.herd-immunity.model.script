@@ -1,0 +1,1176 @@
+install.packages("deSolve")
+
+library(deSolve)
+
+# Model inputs
+
+Initial_values = c(S=999999, I=1, R=0, Total=1)
+parameters = c(beta=0.3, sigma=0.1)
+
+# time
+time1=seq(from=1, to=200, by=1)
+
+# model equation-classical SIR ####
+
+sir_model_classical <-function(time1,state,parameters){
+  with(as.list(c(state,parameters)),{
+  N=S+I+R
+  F_conventional = beta*(I/N)
+  dS = -F_conventional*S
+  dI = F_conventional*S - sigma*I
+  dR = sigma*I
+  dTotal = F_conventional*S 
+  
+  return(list(c(dS,dI,dR,dTotal)))
+  }
+  )
+}
+
+#solving the equations
+SIR_model_classical = as.data.frame(ode(y = Initial_values,
+                                     func = sir_model_classical,
+                                    parms = parameters,
+                                    times = time1)) 
+
+# plot output Classical SIR model
+N=1000000
+SIR_model_classical$S = 100*SIR_model_classical$S/N
+SIR_model_classical$I = 100*SIR_model_classical$I/N
+SIR_model_classical$R = 100*SIR_model_classical$R/N
+SIR_model_classical$Total = 100*SIR_model_classical$Total/N
+
+View(SIR_model_classical)
+print(SIR_model_classical[86,])
+print(SIR_model_classical[200,])
+
+plot(SIR_model_classical$time,
+     SIR_model_classical$S,type = "l", col="blue",
+     ylab = "Proportion, %", ylim = c(0,100),
+     xlab = "Arbitrary time, t",
+     main = "A) Conventional SIR model")
+lines(SIR_model_classical$I, col="red")
+lines(SIR_model_classical$R, col="green")
+lines(SIR_model_classical$Total, col="Black")
+abline(h=66.7)
+text(x=200, y=10, "S(t)",cex=0.8)
+text(x=100, y=20, "I(t)",cex=0.8)
+text(x=110, y=80, "R(t)",cex=0.8)
+text(x=100, y=100, "Total Infections",cex=0.8)
+text(x=200, y=70, "HIT",cex=0.8)
+
+#*******************************************************
+
+# model equation-Model A ####
+
+sir_model_A <-function(time1,state,parameters){
+  with(as.list(c(state,parameters)),{
+    N=S+I+R
+    F_A = beta*(I/N)*(S/N)
+    dS = -F_A*S
+    dI = F_A*S - sigma*I
+    dR = sigma*I
+    dTotal = F_A*S 
+    
+    return(list(c(dS,dI,dR,dTotal)))
+  }
+  )
+}
+
+#solving the equations
+SIR_model_A = as.data.frame(ode(y =Initial_values,
+                             func = sir_model_A,
+                            parms = parameters,
+                            times = time1)) 
+
+# plot output SIR model A
+N=1000000
+SIR_model_A$S = 100*SIR_model_A$S/N
+SIR_model_A$I = 100*SIR_model_A$I/N
+SIR_model_A$R = 100*SIR_model_A$R/N
+SIR_model_A$Total = 100*SIR_model_A$Total/N
+
+print(SIR_model_A[195,])
+print(SIR_model_A[200,])
+
+plot(SIR_model_A$time,
+     SIR_model_A$S,type = "l", col="blue",
+     ylab = "Proportion, %", ylim = c(0,100),
+     xlab = "Arbitrary time, t",
+     main = "B) Model A")
+lines(SIR_model_A$I, col="red")
+lines(SIR_model_A$R, col="green")
+lines(SIR_model_A$Total, col="Black")
+abline(h=66.7)
+text(x=200, y=40, "S(t)",cex=0.8)
+text(x=100, y=15, "I(t)",cex=0.8)
+text(x=110, y=50, "R(t)",cex=0.8)
+text(x=150, y=70, "Total Infections",cex=0.8)
+text(x=5, y=70, "HIT",cex=0.8)
+
+
+#*****************************************************
+
+# model equation-Model B####
+
+sir_model_B <-function(time1,state,parameters){
+  with(as.list(c(state,parameters)),{
+    N=S+I+R
+    F_B = beta*(I/N)*((N-R)/N)
+    dS = -F_B*S
+    dI = F_B*S - sigma*I
+    dR = sigma*I
+    dTotal = F_B*S 
+    
+    return(list(c(dS,dI,dR,dTotal)))
+  }
+  )
+}
+
+#solving the equations
+SIR_model_B = as.data.frame(ode(y = Initial_values,
+                             func = sir_model_B,
+                            parms = parameters,
+                            times = time1)) 
+
+# plot output SIR model B
+N=1000000
+SIR_model_B$S = 100*SIR_model_B$S/N
+SIR_model_B$I = 100*SIR_model_B$I/N
+SIR_model_B$R = 100*SIR_model_B$R/N
+SIR_model_B$Total = 100*SIR_model_B$Total/N
+
+print(SIR_model_B[98,])
+print(SIR_model_B[200,])
+
+plot(SIR_model_B$time,
+     SIR_model_B$S,type = "l", col="blue",
+     ylab = "Proportion, %", ylim = c(0,100),
+     xlab = "Arbitrary time, t",
+     main = "C) Model B")
+lines(SIR_model_B$I, col="red")
+lines(SIR_model_B$R, col="green")
+lines(SIR_model_B$Total, col="Black")
+abline(h=66.7)
+text(x=200, y=30, "S(t)",cex=0.8)
+text(x=90, y=20, "I(t)",cex=0.8)
+text(x=100, y=60, "R(t)",cex=0.8)
+text(x=150, y=80, "Total Infections",cex=0.8)
+text(x=200, y=70, "HIT",cex=0.8)
+
+#********************************************************
+
+# Conventional SIR model vs Model A ####
+
+SIR_model_A$Diff_S = SIR_model_classical$S - SIR_model_A$S
+SIR_model_A$Diff_I = SIR_model_classical$I - SIR_model_A$I
+SIR_model_A$Diff_R = SIR_model_classical$R - SIR_model_A$R
+SIR_model_A$Diff_Total = SIR_model_classical$Total - SIR_model_A$Total
+
+# plot Conventional SIR model vs Model A
+print(SIR_model_A[50,])
+
+plot(SIR_model_A$time,
+     SIR_model_A$Diff_S,type = "l", col="blue",
+     ylab = "Proportion Difference, %", ylim = c(-30,30),
+     xlab = "Arbitrary time, t",
+     main = "D) Conventional SIR model versus Model A")
+lines(SIR_model_A$Diff_I, col="red")
+lines(SIR_model_A$Diff_R, col="green")
+lines(SIR_model_A$Diff_Total, col="Black")
+
+text(x=60, y=-15, "S(t)",cex=0.8)
+text(x=90, y=10, "I(t)",cex=0.8)
+text(x=100, y=25, "R(t)",cex=0.8)
+text(x=40, y=25, "Total Infections",cex=0.8)
+
+
+#***********************************************************
+
+# Conventional SIR model vs Model B ####
+
+SIR_model_B$Diff_S = SIR_model_classical$S - SIR_model_B$S
+SIR_model_B$Diff_I = SIR_model_classical$I - SIR_model_B$I
+SIR_model_B$Diff_R = SIR_model_classical$R - SIR_model_B$R
+SIR_model_B$Diff_Total = SIR_model_classical$Total - SIR_model_B$Total
+
+# plot Conventional SIR model vs Model B
+
+plot(SIR_model_B$time,
+     SIR_model_B$Diff_S,type = "l", col="blue",
+     ylab = "Proportion Difference, %", ylim = c(-30,30),
+     xlab = "Arbitrary time, t",
+     main = "E) Conventional SIR model versus Model B")
+lines(SIR_model_B$Diff_I, col="red")
+lines(SIR_model_B$Diff_R, col="green")
+lines(SIR_model_B$Diff_Total, col="Black")
+
+text(x=60, y=-10, "S(t)",cex=0.8)
+text(x=90, y=7, "I(t)",cex=0.8)
+text(x=100, y=13, "R(t)",cex=0.8)
+text(x=60, y=20, "Total Infections",cex=0.8)
+
+#*********************************************************
+
+# Total infection with varying r0
+
+beta = seq(from=0.11, to=0.4, by=0.01)
+r0 = beta/0.1
+reproduction = as.data.frame(r0)
+reproduction$HIT = 100*(1-(1/reproduction$r0))
+
+
+# sensitivity analysis with conventional SIR model ####
+dat_classical = data.frame()
+
+for(beta in seq(from=0.11, to=0.4, by=0.01)){
+  
+  Initial_values = c(S=999999, I=1, R=0, Total=1)
+  parameters = c(beta, sigma=0.1)
+  
+  # time
+  time=seq(from=1, to=1000, by=1)
+  
+  # model equation-classical SIR
+  
+  sir_model_classical <-function(time,state,parameters){
+    with(as.list(c(state,parameters)),{
+      N=S+I+R
+      F_conventional = beta*(I/N)
+      dS = -F_conventional*S
+      dI = F_conventional*S - sigma*I
+      dR = sigma*I
+      dTotal = F_conventional*S 
+      
+      return(list(c(dS,dI,dR,dTotal)))
+    }
+    )
+  }
+  
+  #solving the equations
+  SIR_model_classical = as.data.frame(ode(y = Initial_values,
+                                       func = sir_model_classical,
+                                      parms = parameters,
+                                      times = time)) 
+    
+   
+  classical = (SIR_model_classical[1000,]) 
+  dat_classical = rbind(dat_classical, classical)
+  print(dat_classical)
+
+}
+
+dat_classical$Total = dat_classical$Total*100/N
+plot(reproduction$r0,dat_classical$Total,type = "l",
+     ylim = c(0,100),col="blue")
+lines(reproduction$r0, reproduction$HIT,type = "b")
+
+# sensitivity analysis with SIR model A ####
+
+dat_A = data.frame()
+
+for(beta in seq(from=0.11, to=0.4, by=0.01)){
+  
+  Initial_values = c(S=999999, I=1, R=0, Total=1)
+  parameters = c(beta, sigma=0.1)
+  
+  # time
+  time=seq(from=1, to=1000, by=1)
+  
+  # model equation- SIR Model A
+  
+  sir_model_A <-function(time,state,parameters){
+    with(as.list(c(state,parameters)),{
+      N=S+I+R
+      F_A = beta*(I/N)*(S/N)
+      dS = -F_A*S
+      dI = F_A*S - sigma*I
+      dR = sigma*I
+      dTotal = F_A*S 
+      
+      return(list(c(dS,dI,dR,dTotal)))
+    }
+    )
+  }
+  
+  #solving the equations
+  SIR_model_A = as.data.frame(ode(y = Initial_values,
+                               func = sir_model_A,
+                              parms = parameters,
+                              times = time)) 
+  
+  
+  Model_A = (SIR_model_A[1000,]) 
+  dat_A = rbind(dat_A, Model_A)
+  print(dat_A)
+  
+}
+
+dat_A$Total = dat_A$Total*100/N
+plot(reproduction$r0,dat_A$Total,type = "l",
+     ylim = c(0,100),col="red")
+lines(reproduction$r0, reproduction$HIT,type = "b")
+
+
+# sensitivity analysis with SIR model B ####
+
+dat_B = data.frame()
+
+for(beta in seq(from=0.11, to=0.4, by=0.01)){
+  
+  Initial_values = c(S=999999, I=1, R=0, Total=1)
+  parameters = c(beta, sigma=0.1)
+  
+  # time
+  time=seq(from=1, to=1000, by=1)
+  
+  # model equation- SIR Model B
+  
+  sir_model_B <-function(time,state,parameters){
+    with(as.list(c(state,parameters)),{
+      N=S+I+R
+      F_B = beta*(I/N)*((N-R)/N)
+      dS = -F_B*S
+      dI = F_B*S - sigma*I
+      dR = sigma*I
+      dTotal = F_B*S 
+      
+      return(list(c(dS,dI,dR,dTotal)))
+    }
+    )
+  }
+  
+  #solving the equations
+  SIR_model_B = as.data.frame(ode(y = Initial_values,
+                               func = sir_model_B,
+                              parms = parameters,
+                              times = time)) 
+  
+  
+  Model_B = (SIR_model_B[1000,]) 
+  dat_B = rbind(dat_B, Model_B)
+  print(dat_B)
+  
+}
+
+dat_B$Total = dat_B$Total*100/N
+plot(reproduction$r0,dat_B$Total,type = "l", col="green")
+lines(reproduction$r0, reproduction$HIT,type = "b")
+
+# combine all output of classical SIR, Model A and Model B
+
+plot(reproduction$r0,dat_classical$Total,
+     type = "l",col="blue",
+     ylab = "Proportion of population (%)",ylim = c(0,100),
+     xlab = "Basic reproduction number,r0")
+title ("F) Total infections with varying r0", adj=0)
+lines(reproduction$r0, dat_A$Total,col="green")
+lines(reproduction$r0, dat_B$Total,col="red")
+lines(reproduction$r0, reproduction$HIT,type = "p")
+
+text(x=2, y=95, "Conventional SIR model",cex=0.8)
+text(x=2.5, y=75, "Model B",cex=0.8)
+text(x=3.0, y=55, "Model A and HIT",cex=0.8)
+
+#*********************************************************************
+# High vaccination rate, v=1.0% population per t ####
+#*********************************************************************
+
+# Conventional SIR vaccine models #####
+
+Initial_values = c(S=989999, I=1, R=10000, V=10000, Total=1)
+parameters = c(beta=0.3, sigma=0.1, v=10000)
+
+# time
+time2=seq(from=1, to=67, by=1)
+
+# model equation-conventional SIR model ####
+
+vm_classical <-function(time2,state,parameters){
+  with(as.list(c(state,parameters)),{
+    N=S+I+R
+    F_conventional = beta*(I/N)
+    dS = -F_conventional*S - v
+    dI = F_conventional*S - sigma*I
+    dR = sigma*I + v
+    dV = v
+    dTotal = F_conventional*S 
+    
+    return(list(c(dS,dI,dR,dV,dTotal)))
+  }
+  )
+}
+
+#solving the equations
+VM_classical = as.data.frame(ode(y = Initial_values,
+                              func = vm_classical,
+                             parms = parameters,
+                             times = time2)) 
+print(VM_classical[67,])
+
+Initial_values = c(S=327874, I=637, R=671487, V=670000, Total=2125)
+parameters = c(beta=0.3, sigma=0.1, v=0)
+
+# time
+time3=seq(from=67, to=500, by=1)
+
+# model equation-conventional SIR model ####
+
+vm2_classical <-function(time3,state,parameters){
+  with(as.list(c(state,parameters)),{
+    N=S+I+R
+    F_conventional = beta*(I/N)
+    dS = -F_conventional*S - v
+    dI = F_conventional*S - sigma*I
+    dR = sigma*I + v
+    dV = v
+    dTotal = F_conventional*S 
+    
+    return(list(c(dS,dI,dR,dV,dTotal)))
+  }
+  )
+}
+
+#solving the equations
+VM2_classical = as.data.frame(ode(y = Initial_values,
+                               func = vm2_classical,
+                              parms = parameters,
+                              times = time3)) 
+
+VMfinal_classical = rbind(VM_classical,VM2_classical)
+VMfinal_classical = VMfinal_classical[-68,]
+View(VMfinal_classical)
+
+# plot output Conventional SIR vaccine model
+N=1000000
+VMfinal_classical$Total = 100*VMfinal_classical$Total/N
+VMfinal_classical$S = 100*VMfinal_classical$S/N
+VMfinal_classical$I = 100*VMfinal_classical$I/N
+VMfinal_classical$R = 100*VMfinal_classical$R/N
+VMfinal_classical$V = 100*VMfinal_classical$V/N
+
+print(VMfinal_classical[67,])
+print(VMfinal_classical[500,])
+
+plot(VMfinal_classical$time,
+     VMfinal_classical$Total,type = "l", col="blue",
+     ylab = "Proportion, %", ylim = c(0,2.0),
+     xlab = "Arbitrary time, t",
+     main = "A) Conventional SIR (v=1.0%)")
+abline(v=67)
+text(x=85, y=2.0, "HIT was achieved at t=67",cex=0.8, adj=0)
+
+#*******************************************************
+
+# SIR vaccine model A #####
+
+Initial_values = c(S=989999, I=1, R=10000,V=10000,Total=1)
+parameters = c(beta=0.3, sigma=0.1, v=10000)
+
+# time
+time2=seq(from=1, to=67, by=1)
+
+# model equation-SIR vaccine model A ####
+
+vm_model_A <-function(time2,state,parameters){
+  with(as.list(c(state,parameters)),{
+    N=S+I+R
+    F_A = beta*(I/N)*(S/N)
+    dS = -F_A*S - v
+    dI = F_A*S - sigma*I
+    dR = sigma*I + v
+    dV = v
+    dTotal = F_A*S 
+    
+    return(list(c(dS,dI,dR,dV,dTotal)))
+  }
+  )
+}
+
+#solving the equations
+VM_A = as.data.frame(ode(y = Initial_values,
+                      func = vm_model_A,
+                     parms = parameters,
+                     times = time2)) 
+print(VM_A[67,])
+
+Initial_values = c(S=329836, I=15, R=670148, V=670000, Total=163)
+parameters = c(beta=0.3, sigma=0.1, v=0)
+
+# time
+time3=seq(from=67, to=500, by=1)
+
+# model equation- SIR vaccine model A ####
+
+vm2_model_A <-function(time3,state,parameters){
+  with(as.list(c(state,parameters)),{
+    N=S+I+R
+    F_A = beta*(I/N)*(S/N)
+    dS = -F_A*S - v
+    dI = F_A*S - sigma*I
+    dR = sigma*I + v
+    dV = v
+    dTotal = F_A*S 
+    
+    return(list(c(dS,dI,dR,dV,dTotal)))
+  }
+  )
+}
+
+#solving the equations
+VM2_A = as.data.frame(ode(y = Initial_values,
+                       func = vm2_model_A,
+                      parms = parameters,
+                      times = time3)) 
+ 
+VMfinal_A = rbind(VM_A,VM2_A)
+VMfinal_A = VMfinal_A[-68,]
+View(VMfinal_A)
+
+# plot output SIR vaccine model A
+N=1000000
+VMfinal_A$Total = 100*VMfinal_A$Total/N
+VMfinal_A$S = 100*VMfinal_A$S/N
+VMfinal_A$I = 100*VMfinal_A$I/N
+VMfinal_A$R = 100*VMfinal_A$R/N
+VMfinal_A$V = 100*VMfinal_A$V/N
+
+print(VMfinal_A[67,])
+print(VMfinal_A[500,])
+
+plot(VMfinal_A$time,
+     VMfinal_A$Total,type = "l", col="blue",
+     ylab = "Proportion, %", ylim = c(0,0.1),
+     xlab = "Arbitrary time, t",
+     main = "B) Model A (v=1.0%)")
+abline(v=67)
+text(x=90, y=0.1, "HIT was achieved at t=67",cex=0.8, adj=0)
+
+#*******************************************************
+
+# SIR vaccine model B #####
+
+Initial_values = c(S=989999, I=1, R=10000, V=10000, Total=1)
+parameters = c(beta=0.3, sigma=0.1, v=10000)
+
+# time
+time2=seq(from=1, to=67, by=1)
+
+# model equation-SIR vaccine Model B ####
+
+vm_model_B <-function(time2,state,parameters){
+  with(as.list(c(state,parameters)),{
+    N=S+I+R
+    F_B = beta*(I/N)*((N-R)/N)
+    dS = -F_B*S - v
+    dI = F_B*S - sigma*I
+    dR = sigma*I + v
+    dV = v
+    dTotal = F_B*S 
+    
+    return(list(c(dS,dI,dR,dV,dTotal)))
+  }
+  )
+}
+
+#solving the equations
+VM_B = as.data.frame(ode(y = Initial_values,
+                      func = vm_model_B,
+                     parms = parameters,
+                     times = time2)) 
+print(VM_B[67,])
+
+Initial_values = c(S=329836, I=15, R=670148, V=670000, Total=163)
+parameters = c(beta=0.3, sigma=0.1, v=0)
+
+# time
+time3=seq(from=67, to=500, by=1)
+
+# model equation-SIR vaccine model B ####
+
+vm2_model_B <-function(time3,state,parameters){
+  with(as.list(c(state,parameters)),{
+    N=S+I+R
+    F_B = beta*(I/N)*((N-R)/N)
+    dS = -F_B*S - v
+    dI = F_B*S - sigma*I
+    dR = sigma*I + v
+    dV = v
+    dTotal = F_B*S 
+    
+    return(list(c(dS,dI,dR,dV, dTotal)))
+  }
+  )
+}
+
+#solving the equations
+VM2_B = as.data.frame(ode(y = Initial_values,
+                       func = vm2_model_B,
+                      parms = parameters,
+                      times = time3)) 
+
+VMfinal_B = rbind(VM_B,VM2_B)
+View(VMfinal_B)
+VMfinal_B = VMfinal_B[-68,]
+
+
+# plot output SIR vaccine model B
+N=1000000
+VMfinal_B$Total = 100*VMfinal_B$Total/N
+VMfinal_B$S = 100*VMfinal_B$S/N
+VMfinal_B$I = 100*VMfinal_B$I/N
+VMfinal_B$R = 100*VMfinal_B$R/N
+VMfinal_B$V = 100*VMfinal_B$V/N
+
+print(VMfinal_B[67,])
+print(VMfinal_B[500,])
+
+
+plot(VMfinal_B$time,
+     VMfinal_B$Total,type = "l", col="blue",
+     ylab = "Proportion, %", ylim = c(0,0.1),
+     xlab = "Arbitrary time, t",
+     main = "C) Model B (v=1.0%)")
+abline(v=67)
+text(x=90, y=0.1, "HIT was achieved at t=67",cex=0.8, adj=0)
+
+#***************************************************************
+# Intermediate vaccination rate, v=0.5% population per t ####
+#***************************************************************
+
+# Conventional SIR vaccine model #####
+
+Initial_values = c(S=994999, I=1, R=5000, V=5000, Total=1)
+parameters = c(beta=0.3, sigma=0.1, v=5000)
+
+# time
+time4=seq(from=1, to=100, by=1)
+
+# model equation-conventional SIR vaccine model ####
+
+vm_classical <-function(time4,state,parameters){
+  with(as.list(c(state,parameters)),{
+    N=S+I+R
+    F_conventional = beta*(I/N)
+    dS = -F_conventional*S - v
+    dI = F_conventional*S - sigma*I
+    dR = sigma*I + v
+    dV = v
+    dTotal = F_conventional*S 
+    
+    return(list(c(dS,dI,dR,dV,dTotal)))
+  }
+  )
+}
+
+#solving the equations
+VM_classical = as.data.frame(ode(y = Initial_values,
+                              func = vm_classical,
+                             parms = parameters,
+                             times = time4)) 
+print(VM_classical[100,])
+
+Initial_values = c(S=273300, I=58801, R=667898, V=500000, Total=226699)
+parameters = c(beta=0.3, sigma=0.1, v=0)
+
+# time
+time5 = seq(from=100, to=300, by=1)
+
+# model equation-conventioanl SIR vaccine model ####
+
+vm2_classical <-function(time5,state,parameters){
+  with(as.list(c(state,parameters)),{
+    N=S+I+R
+    F_conventional = beta*(I/N)
+    dS = -F_conventional*S - v
+    dI = F_conventional*S - sigma*I
+    dR = sigma*I + v
+    dV = v
+    dTotal = F_conventional*S 
+    
+    return(list(c(dS,dI,dR,dV,dTotal)))
+  }
+  )
+}
+
+#solving the equations
+VM2_classical = as.data.frame(ode(y = Initial_values,
+                               func = vm2_classical,
+                              parms = parameters,
+                              times = time5)) 
+
+VMfinal_classical = rbind(VM_classical,VM2_classical)
+View(VMfinal_classical)
+
+VMfinal_classical = VMfinal_classical[-101,]
+
+# plot output Conventional SIR vaccine model
+N=1000000
+VMfinal_classical$Total = 100*VMfinal_classical$Total/N
+VMfinal_classical$S = 100*VMfinal_classical$S/N
+VMfinal_classical$I = 100*VMfinal_classical$I/N
+VMfinal_classical$R = 100*VMfinal_classical$R/N
+VMfinal_classical$V = 100*VMfinal_classical$V/N
+
+print(VMfinal_classical[100,])
+print(VMfinal_classical[300,])
+
+plot(VMfinal_classical$time,
+     VMfinal_classical$Total,type = "l", col="blue",
+     ylab = "Proportion, %", ylim = c(0,50.0),
+     xlab = "Arbitrary time, t",
+     main = "D) Conventional SIR (v=0.5%)")
+abline(v=100)
+text(x=105, y=50, "HIT was achieved at t=100",cex=0.8, adj=0)
+
+#*******************************************************
+
+# SIR vaccine model A #####
+
+Initial_values = c(S=994999, I=1, R=5000, V=5000, Total=1)
+parameters = c(beta=0.3, sigma=0.1, v=5000)
+
+# time
+time6=seq(from=1, to=131, by=1)
+
+# model equation-SIR Model A ####
+
+vm_model_A <-function(time6,state,parameters){
+  with(as.list(c(state,parameters)),{
+    N=S+I+R
+    F_A = beta*(I/N)*(S/N)
+    dS = -F_A*S - v
+    dI = F_A*S - sigma*I
+    dR = sigma*I + v
+    dV = v
+    dTotal = F_A*S 
+    
+    return(list(c(dS,dI,dR,dV,dTotal)))
+  }
+  )
+}
+
+#solving the equations
+VM_A = as.data.frame(ode(y = Initial_values,
+                      func = vm_model_A,
+                     parms = parameters,
+                     times = time6)) 
+print(VM_A[131,])
+
+Initial_values = c(S=334825, I=301, R=664872, V=655000, Total=10174)
+parameters = c(beta=0.3, sigma=0.1, v=0)
+
+# time
+time7=seq(from=131, to=300, by=1)
+
+# model equation- SIR model A ####
+
+vm2_model_A <-function(time7,state,parameters){
+  with(as.list(c(state,parameters)),{
+    N=S+I+R
+    F_A = beta*(I/N)*(S/N)
+    dS = -F_A*S - v
+    dI = F_A*S - sigma*I
+    dR = sigma*I + v
+    dV = v
+    dTotal = F_A*S 
+    
+    return(list(c(dS,dI,dR,dV,dTotal)))
+  }
+  )
+}
+
+#solving the equations
+VM2_A = as.data.frame(ode(y = Initial_values,
+                       func = vm2_model_A,
+                      parms = parameters,
+                      times = time7)) 
+
+VMfinal_A = rbind(VM_A,VM2_A)
+View(VMfinal_A)
+VMfinal_A = VMfinal_A[-132,]
+
+# plot output SIR vaccine model A
+N=1000000
+VMfinal_A$Total = 100*VMfinal_A$Total/N
+VMfinal_A$S = 100*VMfinal_A$S/N
+VMfinal_A$I = 100*VMfinal_A$I/N
+VMfinal_A$R = 100*VMfinal_A$R/N
+VMfinal_A$V = 100*VMfinal_A$V/N
+
+print(VMfinal_A[131,])
+print(VMfinal_A[300,])
+
+plot(VMfinal_A$time,
+     VMfinal_A$Total,type = "l", col="blue",
+     ylab = "Proportion, %", ylim = c(0,5),
+     xlab = "Arbitrary time, t",
+     main = "E) Model A (v=0.5%)")
+abline(v=131)
+text(x=135, y=5.0, "HIT was achieved at t=131",cex=0.8, adj=0)
+
+#*******************************************************
+
+# SIR vaccine model B #####
+
+Initial_values = c(S=994999, I=1, R=5000,V=5000, Total=1)
+parameters = c(beta=0.3, sigma=0.1, v=5000)
+
+# time
+time8=seq(from=1, to=131, by=1)
+
+# model equation-SIR vaccine Model B ####
+
+vm_model_B <-function(time8,state,parameters){
+  with(as.list(c(state,parameters)),{
+    N=S+I+R
+    F_B = beta*(I/N)*((N-R)/N)
+    dS = -F_B*S - v
+    dI = F_B*S - sigma*I
+    dR = sigma*I + v
+    dV = v
+    dTotal = F_B*S 
+    
+    return(list(c(dS,dI,dR,dV,dTotal)))
+  }
+  )
+}
+
+#solving the equations
+VM_B = as.data.frame(ode(y = Initial_values,
+                      func = vm_model_B,
+                     parms = parameters,
+                     times = time8)) 
+print(VM_B[131,])
+
+Initial_values = c(S=334729, I=306, R=664963, V=655000, Total=10270)
+parameters = c(beta=0.3, sigma=0.1, v=0)
+
+# time
+time9=seq(from=131, to=300, by=1)
+
+# model equation-SIR vaccine model B ####
+
+vm2_model_B <-function(time9,state,parameters){
+  with(as.list(c(state,parameters)),{
+    N=S+I+R
+    F_B = beta*(I/N)*((N-R)/N)
+    dS = -F_B*S - v
+    dI = F_B*S - sigma*I
+    dR = sigma*I + v
+    dV = v
+    dTotal = F_B*S 
+    
+    return(list(c(dS,dI,dR,dV,dTotal)))
+  }
+  )
+}
+
+#solving the equations
+VM2_B = as.data.frame(ode(y = Initial_values,
+                       func = vm2_model_B,
+                      parms = parameters,
+                      times = time9)) 
+
+VMfinal_B = rbind(VM_B,VM2_B)
+View(VMfinal_B)
+VMfinal_B = VMfinal_B[-132,]
+
+# plot output SIR vaccine model B
+N=1000000
+VMfinal_B$Total = 100*VMfinal_B$Total/N
+VMfinal_B$S = 100*VMfinal_B$S/N
+VMfinal_B$I = 100*VMfinal_B$I/N
+VMfinal_B$R = 100*VMfinal_B$R/N
+VMfinal_B$V = 100*VMfinal_B$V/N
+
+print(VMfinal_B[131,])
+print(VMfinal_B[300,])
+
+plot(VMfinal_B$time,
+     VMfinal_B$Total,type = "l", col="blue",
+     ylab = "Proportion, %", ylim = c(0,5.0),
+     xlab = "Arbitrary time, t",
+     main = "F) Model B (v=0.5%)")
+abline(v=131)
+text(x=135, y=5.0, "HIT was achieved at t=131",cex=0.8, adj=0)
+
+#*******************************************************
+# Low vaccination rate, v=0.1% population per t ####
+#***************************************************************
+
+# Conventional SIR vaccine model #####
+
+Initial_values = c(S=998999, I=1, R=1000, V=1000, Total=1)
+parameters = c(beta=0.3, sigma=0.1, v=1000)
+
+# time
+time10=seq(from=1, to=87, by=1)
+
+# model equation-conventional SIR vaccine model ####
+
+vm_classical <-function(time10,state,parameters){
+  with(as.list(c(state,parameters)),{
+    N=S+I+R
+    F_conventional = beta*(I/N)
+    dS = -F_conventional*S - v
+    dI = F_conventional*S - sigma*I
+    dR = sigma*I + v
+    dV = v
+    dTotal = F_conventional*S 
+    
+    return(list(c(dS,dI,dR,dV,dTotal)))
+  }
+  )
+}
+
+#solving the equations
+VM_classical = as.data.frame(ode(y = Initial_values,
+                              func = vm_classical,
+                             parms = parameters,
+                             times = time10)) 
+print(VM_classical[87,])
+
+Initial_values = c(S=160541, I=188658, R=650799, V=87000, Total=752458)
+parameters = c(beta=0.3, sigma=0.1, v=0)
+
+# time
+time11=seq(from=87, to=200, by=1)
+
+# model equation-conventional SIR vaccine model ####
+
+vm2_classical <-function(time11,state,parameters){
+  with(as.list(c(state,parameters)),{
+    N=S+I+R
+    F_conventional = beta*(I/N)
+    dS = -F_conventional*S - v
+    dI = F_conventional*S - sigma*I
+    dR = sigma*I + v
+    dV = v
+    dTotal = F_conventional*S 
+    
+    return(list(c(dS,dI,dR,dV,dTotal)))
+  }
+  )
+}
+
+#solving the equations
+VM2_classical = as.data.frame(ode(y =Initial_values,
+                               func = vm2_classical,
+                              parms = parameters,
+                              times = time11)) 
+
+VMfinal_classical = rbind(VM_classical,VM2_classical)
+View(VMfinal_classical)
+VMfinal_classical = VMfinal_classical[-88,]
+
+
+# plot output Conventional SIR vaccine model
+N=1000000
+VMfinal_classical$Total = 100*VMfinal_classical$Total/N
+VMfinal_classical$S = 100*VMfinal_classical$S/N
+VMfinal_classical$I = 100*VMfinal_classical$I/N
+VMfinal_classical$R = 100*VMfinal_classical$R/N
+VMfinal_classical$V = 100*VMfinal_classical$V/N
+
+print(VMfinal_classical[87,])
+print(VMfinal_classical[200,])
+
+
+plot(VMfinal_classical$time,
+     VMfinal_classical$Total,type = "l", col="blue",
+     ylab = "Proportion, %", ylim = c(0,100.0),
+     xlab = "Arbitrary time, t",
+     main = "G) Conventional SIR(v=0.1%)")
+abline(v=87)
+text(x=90, y=100, "HIT was achieved at t=87",cex=0.8, adj=0)
+
+#*******************************************************
+
+# SIR vaccine model A #####
+
+Initial_values = c(S=998999, I=1, R=1000,V=1000, Total=1)
+parameters = c(beta=0.3, sigma=0.1, v=1000)
+
+# time
+time12=seq(from=1, to=134, by=1)
+
+# model equation-SIR vaccine Model A ####
+
+vm_model_A <-function(time12,state,parameters){
+  with(as.list(c(state,parameters)),{
+    N=S+I+R
+    F_A = beta*(I/N)*(S/N)
+    dS = -F_A*S - v
+    dI = F_A*S - sigma*I
+    dR = sigma*I + v
+    dV = v
+    dTotal = F_A*S 
+    
+    return(list(c(dS,dI,dR,dV,dTotal)))
+  }
+  )
+}
+
+#solving the equations
+VM_A = as.data.frame(ode(y = Initial_values,
+                      func = vm_model_A,
+                     parms = parameters,
+                     times = time12)) 
+print(VM_A[134,])
+
+Initial_values = c(S=327223, I=8576, R=664200,V=134000, Total=538777)
+parameters = c(beta=0.3, sigma=0.1, v=0)
+
+# time
+time13=seq(from=134, to=200, by=1)
+
+# model equation- SIR vaccine model A ####
+
+vm2_model_A <-function(time13,state,parameters){
+  with(as.list(c(state,parameters)),{
+    N=S+I+R
+    F_A = beta*(I/N)*(S/N)
+    dS = -F_A*S - v
+    dI = F_A*S - sigma*I
+    dR = sigma*I + v
+    dV = v
+    dTotal = F_A*S 
+    
+    return(list(c(dS,dI,dR,dV,dTotal)))
+  }
+  )
+}
+
+#solving the equations
+VM2_A = as.data.frame(ode(y = Initial_values,
+                       func = vm2_model_A,
+                      parms = parameters,
+                      times = time13)) 
+
+VMfinal_A = rbind(VM_A,VM2_A)
+View(VMfinal_A)
+VMfinal_A = VMfinal_A[-135,]
+
+# plot output SIR vaccine model A
+N=1000000
+VMfinal_A$Total = 100*VMfinal_A$Total/N
+VMfinal_A$S = 100*VMfinal_A$S/N
+VMfinal_A$I = 100*VMfinal_A$I/N
+VMfinal_A$R = 100*VMfinal_A$R/N
+VMfinal_A$V = 100*VMfinal_A$V/N
+
+print(VMfinal_A[134,])
+print(VMfinal_A[200,])
+
+plot(VMfinal_A$time,
+     VMfinal_A$Total,type = "l", col="blue",
+     ylab = "Proportion, %", ylim = c(0,100),
+     xlab = "Arbitrary time, t",
+     main = "H) Model A (v=0.1%)")
+abline(v=134)
+text(x=130, y=100.0, "HIT was achieved at t=134",cex=0.8, adj=1)
+
+#*******************************************************
+
+# SIR vaccine model B #####
+
+Initial_values = c(S=998999, I=1, R=1000, V=1000, Total=1)
+parameters = c(beta=0.3, sigma=0.1, v=1000)
+
+# time
+time14=seq(from=1, to=107, by=1)
+
+# model equation-SIR vaccine Model B ####
+
+vm_model_B <-function(time14,state,parameters){
+  with(as.list(c(state,parameters)),{
+    N=S+I+R
+    F_B = beta*(I/N)*((N-R)/N)
+    dS = -F_B*S - v
+    dI = F_B*S - sigma*I
+    dR = sigma*I + v
+    dV = v
+    dTotal = F_B*S 
+    
+    return(list(c(dS,dI,dR,dV,dTotal)))
+  }
+  )
+}
+
+#solving the equations
+VM_B = as.data.frame(ode(y = Initial_values,
+                      func = vm_model_B,
+                     parms = parameters,
+                     times = time14)) 
+print(VM_B[107,])
+
+Initial_values = c(S=289969, I=46758, R=663271, V=107000, Total=603030)
+parameters = c(beta=0.3, sigma=0.1, v=0)
+
+# time
+time15=seq(from=107, to=200, by=1)
+
+# model equation-SIR vaccine model B ####
+
+vm2_model_B <-function(time15,state,parameters){
+  with(as.list(c(state,parameters)),{
+    N=S+I+R
+    F_B = beta*(I/N)*((N-R)/N)
+    dS = -F_B*S - v
+    dI = F_B*S - sigma*I
+    dR = sigma*I + v
+    dV = v
+    dTotal = F_B*S 
+    
+    return(list(c(dS,dI,dR,dV,dTotal)))
+  }
+  )
+}
+
+#solving the equations
+VM2_B = as.data.frame(ode(y = Initial_values,
+                       func = vm2_model_B,
+                      parms = parameters,
+                      times = time15)) 
+
+VMfinal_B = rbind(VM_B,VM2_B)
+View(VMfinal_B)
+VMfinal_B = VMfinal_B[-108,]
+
+
+# plot output SIR vaccine model B
+N=1000000
+VMfinal_B$Total = 100*VMfinal_B$Total/N
+VMfinal_B$S = 100*VMfinal_B$S/N
+VMfinal_B$I = 100*VMfinal_B$I/N
+VMfinal_B$R = 100*VMfinal_B$R/N
+VMfinal_B$V = 100*VMfinal_B$V/N
+
+print(VMfinal_B[107,])
+print(VMfinal_B[200,])
+
+plot(VMfinal_B$time,
+     VMfinal_B$Total,type = "l", col="blue",
+     ylab = "Proportion, %", ylim = c(0,100.0),
+     xlab = "Arbitrary time, t",
+     main = "I) Model B (v=0.1%)")
+abline(v=107)
+text(x=100, y=100.0, "HIT was achieved at t=107",cex=0.8, adj=1)
+
+
+#************************ THE END*******************************
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
