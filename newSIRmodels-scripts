@@ -213,7 +213,7 @@ text(x=60, y=20, "Total Infections",cex=0.8)
 
 # Total infection with varying r0
 
-beta = seq(from=0.11, to=0.4, by=0.01)
+beta = seq(from=0.11, to=1.0, by=0.01)
 r0 = beta/0.1
 reproduction = as.data.frame(r0)
 reproduction$HIT = 100*(1-(1/reproduction$r0))
@@ -222,7 +222,7 @@ reproduction$HIT = 100*(1-(1/reproduction$r0))
 # sensitivity analysis with conventional SIR model ####
 dat_classical = data.frame()
 
-for(beta in seq(from=0.11, to=0.4, by=0.01)){
+for(beta in seq(from=0.11, to=1.0, by=0.01)){
   
   Initial_values = c(S=999999, I=1, R=0, Total=1)
   parameters = c(beta, sigma=0.1)
@@ -268,7 +268,7 @@ lines(reproduction$r0, reproduction$HIT,type = "b")
 
 dat_A = data.frame()
 
-for(beta in seq(from=0.11, to=0.4, by=0.01)){
+for(beta in seq(from=0.11, to=1.0, by=0.01)){
   
   Initial_values = c(S=999999, I=1, R=0, Total=1)
   parameters = c(beta, sigma=0.1)
@@ -315,7 +315,7 @@ lines(reproduction$r0, reproduction$HIT,type = "b")
 
 dat_B = data.frame()
 
-for(beta in seq(from=0.11, to=0.4, by=0.01)){
+for(beta in seq(from=0.11, to=1.0, by=0.01)){
   
   Initial_values = c(S=999999, I=1, R=0, Total=1)
   parameters = c(beta, sigma=0.1)
@@ -367,9 +367,15 @@ lines(reproduction$r0, dat_A$Total,col="green")
 lines(reproduction$r0, dat_B$Total,col="red")
 lines(reproduction$r0, reproduction$HIT,type = "p")
 
-text(x=2, y=95, "Conventional SIR model",cex=0.8)
-text(x=2.5, y=75, "Model B",cex=0.8)
-text(x=3.0, y=55, "Model A and HIT",cex=0.8)
+text(x=2.5, y=100, "Conventional SIR model",cex=0.8)
+text(x=2.8, y=82, "Model B",cex=0.8)
+text(x=6.0, y=70, "Model A and HIT",cex=0.8)
+
+### export output data 
+write.csv(reproduction, file = "reproduction.csv")
+write.csv(dat_classical, file = "ClassicalSIR.csv")
+write.csv(dat_A, file = "SIR_A.csv")
+write.csv(dat_B, file = "SIR_B.csv")
 
 #*********************************************************************
 # High vaccination rate, v=1.0% population per t ####
