@@ -378,7 +378,7 @@ write.csv(dat_A, file = "SIR_A.csv")
 write.csv(dat_B, file = "SIR_B.csv")
 
 #*********************************************************************
-# High vaccination rate, v=1.0% population per t ####
+# High vac_classical rate, v=1.0% population per t ####
 #*********************************************************************
 
 # Conventional SIR vaccine models #####
@@ -640,7 +640,7 @@ abline(v=67)
 text(x=90, y=0.1, "HIT was achieved at t=67",cex=0.8, adj=0)
 
 #***************************************************************
-# Intermediate vaccination rate, v=0.5% population per t ####
+# Intermediate vac_classical rate, v=0.5% population per t ####
 #***************************************************************
 
 # Conventional SIR vaccine model #####
@@ -1163,8 +1163,768 @@ plot(VMfinal_B$time,
 abline(v=107)
 text(x=100, y=100.0, "HIT was achieved at t=107",cex=0.8, adj=1)
 
+#****************************************************************
+#**********simulation of other infectious diseases**********####
+#****************************************************************
+
+
+# WITHOUT Vaccination #####
+
+# Seasonal Influenza, R0 = 1.3
+# Duration of sickness = 5 days
+# US total population size N = 309 million in 2010, 295.5 million in 2005
+# 
+# Net population growth rate annual 0.005 (0.5%)
+# Waning of natural immunity after 12 months due to changes in circulating influenza viruses from year to year
+
+
+
+
+Initial_values = c(S=295000000, I=1, R=0, Itotal=1)
+parameters = c(beta=0.26, sigma=0.2, Dur = 180, b=0.000013698)
+
+# time
+time=seq(from=1, to=5475, by=1)
+
+# classical SIR ####
+
+sir_model_classical <-function(time,state,parameters){
+  with(as.list(c(state,parameters)),{
+    N=S+I+R
+    F_conventional = beta*(I/N)
+    w = 1/Dur
+    dS = -F_conventional*S + w*R + b*N
+    dI = F_conventional*S - sigma*I
+    dR = sigma*I - w*R
+    dItotal = F_conventional*S
+    
+    return(list(c(dS,dI,dR,dItotal)))
+  }
+  )
+}
+
+#solving the equations
+SIR_model_classical = as.data.frame(ode(y = Initial_values,
+                                        func = sir_model_classical,
+                                        parms = parameters,
+                                        times = time)) 
+
+# plot output Classical SIR model
+SIR_model_classical$N = SIR_model_classical$S+SIR_model_classical$I+SIR_model_classical$R
+SIR_model_classical$N_per = 100*SIR_model_classical$N/SIR_model_classical$N
+SIR_model_classical$S_per = 100*SIR_model_classical$S/SIR_model_classical$N
+SIR_model_classical$I_per = 100*SIR_model_classical$I/SIR_model_classical$N
+SIR_model_classical$R_per = 100*SIR_model_classical$R/SIR_model_classical$N
+SIR_model_classical$Itotal_per = 100*SIR_model_classical$Itotal/SIR_model_classical$N
+
+plot(SIR_model_classical$time,
+     SIR_model_classical$I_per,type = "l", col="red",
+     ylab = "Proportion, %", ylim = c(0,100),
+     xlab = "Arbitrary time, t", xlim=c(0,5475))
+lines(SIR_model_classical$time, SIR_model_classical$N_per)
+lines(SIR_model_classical$time, SIR_model_classical$S_per, col="green")
+lines(SIR_model_classical$time, SIR_model_classical$R_per, col="blue")
+title(" Conventional SIR: Influenza (r0=1.3)", cex=0.8, adj=0)
+
+write.csv(SIR_model_classical, file = "influenza_classicSIR.csv")
+
+# calculating disease burden over year
+Y1 = SIR_model_classical$Itotal[365]
+Y2 = SIR_model_classical$Itotal[730]
+Y3 = SIR_model_classical$Itotal[1095]
+Y4 = SIR_model_classical$Itotal[1460]
+Y5 = SIR_model_classical$Itotal[1825]
+Y6 = SIR_model_classical$Itotal[2190]
+Y7 = SIR_model_classical$Itotal[2555]
+Y8 = SIR_model_classical$Itotal[2920]
+Y9 = SIR_model_classical$Itotal[3285]
+Y10 = SIR_model_classical$Itotal[3650]
+Y11 = SIR_model_classical$Itotal[4015]
+Y12 = SIR_model_classical$Itotal[4380]
+Y13 = SIR_model_classical$Itotal[4745]
+Y14 = SIR_model_classical$Itotal[5110]
+
+# disease burden
+Year1 = SIR_model_classical$Itotal[1:365] 
+Year2 = SIR_model_classical$Itotal[366:730]-Y1
+Year3 = SIR_model_classical$Itotal[731:1095]-Y2
+Year4 = SIR_model_classical$Itotal[1096:1460]-Y3
+Year5 = SIR_model_classical$Itotal[1461:1825]-Y4
+Year6 = SIR_model_classical$Itotal[1826:2190]-Y5
+Year7 = SIR_model_classical$Itotal[2191:2555]-Y6
+Year8 = SIR_model_classical$Itotal[2556:2920]-Y7
+Year9 = SIR_model_classical$Itotal[2921:3285]-Y8
+Year10 = SIR_model_classical$Itotal[3286:3650]-Y9
+Year11 = SIR_model_classical$Itotal[3651:4015]-Y10
+Year12 = SIR_model_classical$Itotal[4016:4380]-Y11
+Year13 = SIR_model_classical$Itotal[4381:4745]-Y12
+Year14 = SIR_model_classical$Itotal[4746:5110]-Y13
+Year15 = SIR_model_classical$Itotal[5111:5475]-Y14
+
+burden_classicalSIR = as.data.frame(cbind(Year1,Year2,Year3,Year4,Year5,Year6,
+                                          Year7,Year8,Year9,Year10,Year11,Year12,Year13,Year14,Year15))
+
+View(burden_classicalSIR)
+print(burden_classicalSIR[365,])
+
+# Model A ####
+
+sir_model_A <-function(time,state,parameters){
+  with(as.list(c(state,parameters)),{
+    N=S+I+R
+    w = 1/Dur
+    F_A = beta*(I/N)*(S/N)
+    dS = -F_A*S + w*R + b*N
+    dI = F_A*S - sigma*I
+    dR = sigma*I - w*R
+    dITotal = F_A*S 
+    
+    return(list(c(dS,dI,dR,dITotal)))
+  }
+  )
+}
+
+#solving the equations
+SIR_model_A = as.data.frame(ode(y = Initial_values,
+                                func = sir_model_A,
+                                parms = parameters,
+                                times = time)) 
+
+# plot output SIR model A
+SIR_model_A$N = SIR_model_A$S+SIR_model_A$I+SIR_model_A$R
+SIR_model_A$N_per = 100*SIR_model_A$N/SIR_model_A$N
+SIR_model_A$S_per = 100*SIR_model_A$S/SIR_model_A$N
+SIR_model_A$I_per = 100*SIR_model_A$I/SIR_model_A$N
+SIR_model_A$R_per = 100*SIR_model_A$R/SIR_model_A$N
+SIR_model_A$Itotal_per = 100*SIR_model_A$Itotal/SIR_model_A$N
+
+plot(SIR_model_A$time,
+     SIR_model_A$I_per,type = "l", col="red",
+     ylab = "Proportion, %", ylim = c(0,100),
+     xlab = "Arbitrary time, t", xlim=c(0,5475))
+lines(SIR_model_A$time, SIR_model_A$N_per)
+lines(SIR_model_A$time, SIR_model_A$R_per, col="blue")
+lines(SIR_model_A$time, SIR_model_A$S_per,col="green")
+title("New SIR Model A: Influenza (r0=1.3)", cex=0.8, adj=0)
+
+write.csv(SIR_model_A, file = "influenza_SIRA.csv")
+
+A1 = SIR_model_A$Itotal[365]
+A2 = SIR_model_A$Itotal[730]
+A3 = SIR_model_A$Itotal[1095]
+A4 = SIR_model_A$Itotal[1460]
+A5 = SIR_model_A$Itotal[1825]
+A6 = SIR_model_A$Itotal[2190]
+A7 = SIR_model_A$Itotal[2555]
+A8 = SIR_model_A$Itotal[2920]
+A9 = SIR_model_A$Itotal[3285]
+A10 = SIR_model_A$Itotal[3650]
+A11 = SIR_model_A$Itotal[4015]
+A12 = SIR_model_A$Itotal[4380]
+A13 = SIR_model_A$Itotal[4745]
+A14 = SIR_model_A$Itotal[5110]
+
+# disease burden
+Year1 = SIR_model_A$Itotal[1:365] 
+Year2 = SIR_model_A$Itotal[366:730]-A1
+Year3 = SIR_model_A$Itotal[731:1095]-A2
+Year4 = SIR_model_A$Itotal[1096:1460]-A3
+Year5 = SIR_model_A$Itotal[1461:1825]-A4
+Year6 = SIR_model_A$Itotal[1826:2190]-A5
+Year7 = SIR_model_A$Itotal[2191:2555]-A6
+Year8 = SIR_model_A$Itotal[2556:2920]-A7
+Year9 = SIR_model_A$Itotal[2921:3285]-A8
+Year10 = SIR_model_A$Itotal[3286:3650]-A9
+Year11 = SIR_model_A$Itotal[3651:4015]-A10
+Year12 = SIR_model_A$Itotal[4016:4380]-A11
+Year13 = SIR_model_A$Itotal[4381:4745]-A12
+Year14 = SIR_model_A$Itotal[4746:5110]-A13
+Year15 = SIR_model_A$Itotal[5111:5475]-A14
+
+burden_ASIR = as.data.frame(cbind(Year1,Year2,Year3,Year4,Year5,Year6,
+                                  Year7,Year8,Year9,Year10,Year11,Year12,Year13,Year14,Year15))
+
+View(burden_ASIR)
+print(burden_ASIR[365,])
+
+
+
+# Model B####
+
+sir_model_B <-function(time,state,parameters){
+  with(as.list(c(state,parameters)),{
+    N=S+I+R
+    w = 1/Dur
+    F_B = beta*(I/N)*((N-R)/N)
+    dS = -F_B*S + w*R + b*N
+    dI = F_B*S - sigma*I
+    dR = sigma*I - w*R
+    dITotal = F_B*S 
+    
+    return(list(c(dS,dI,dR,dITotal)))
+  }
+  )
+}
+
+#solving the equations
+SIR_model_B = as.data.frame(ode(y = Initial_values,
+                                func = sir_model_B,
+                                parms = parameters,
+                                times = time)) 
+
+# plot output SIR model B
+SIR_model_B$N = SIR_model_B$S+SIR_model_B$I+SIR_model_B$R
+SIR_model_B$N_per = 100*SIR_model_B$N/SIR_model_B$N
+SIR_model_B$S_per = 100*SIR_model_B$S/SIR_model_B$N
+SIR_model_B$I_per = 100*SIR_model_B$I/SIR_model_B$N
+SIR_model_B$R_per = 100*SIR_model_B$R/SIR_model_B$N
+SIR_model_B$Itotal_per = 100*SIR_model_B$Itotal/SIR_model_B$N
+
+plot(SIR_model_B$time,
+     SIR_model_B$I_per,type = "l", col="red",
+     ylab = "Proportion, %", ylim = c(0,100),
+     xlab = "Arbitrary time, t", xlim=c(0,5475))
+lines(SIR_model_B$time, SIR_model_B$N_per)
+lines(SIR_model_B$time, SIR_model_B$R_per, col="blue")
+lines(SIR_model_B$time, SIR_model_B$S_per,col="green")
+title("New SIR Model B: Influenza (r0=1.3)", cex=0.8, adj=0)
+
+write.csv(SIR_model_B, file = "influenza_SIRB.csv")
+
+B1 = SIR_model_B$Itotal[365]
+B2 = SIR_model_B$Itotal[730]
+B3 = SIR_model_B$Itotal[1095]
+B4 = SIR_model_B$Itotal[1460]
+B5 = SIR_model_B$Itotal[1825]
+B6 = SIR_model_B$Itotal[2190]
+B7 = SIR_model_B$Itotal[2555]
+B8 = SIR_model_B$Itotal[2920]
+B9 = SIR_model_B$Itotal[3285]
+B10 = SIR_model_B$Itotal[3650]
+B11 = SIR_model_B$Itotal[4015]
+B12 = SIR_model_B$Itotal[4380]
+B13 = SIR_model_B$Itotal[4745]
+B14 = SIR_model_B$Itotal[5110]
+
+# disease burden
+Year1 = SIR_model_B$Itotal[1:365] 
+Year2 = SIR_model_B$Itotal[366:730]-B1
+Year3 = SIR_model_B$Itotal[731:1095]-B2
+Year4 = SIR_model_B$Itotal[1096:1460]-B3
+Year5 = SIR_model_B$Itotal[1461:1825]-B4
+Year6 = SIR_model_B$Itotal[1826:2190]-B5
+Year7 = SIR_model_B$Itotal[2191:2555]-B6
+Year8 = SIR_model_B$Itotal[2556:2920]-B7
+Year9 = SIR_model_B$Itotal[2921:3285]-B8
+Year10 = SIR_model_B$Itotal[3286:3650]-B9
+Year11 = SIR_model_B$Itotal[3651:4015]-B10
+Year12 = SIR_model_B$Itotal[4016:4380]-B11
+Year13 = SIR_model_B$Itotal[4381:4745]-B12
+Year14 = SIR_model_B$Itotal[4746:5110]-B13
+Year15 = SIR_model_B$Itotal[5111:5475]-B14
+
+burden_BSIR = as.data.frame(cbind(Year1,Year2,Year3,Year4,Year5,Year6,
+                                  Year7,Year8,Year9,Year10,Year11,Year12,Year13,Year14,Year15))
+
+View(burden_BSIR)
+print(burden_BSIR[365,])
+
+
+# WITH Vaccination #####
+
+# Seasonal Influenza, R0 = 1.3
+# Duration of sickness/contagiousness = 5 days
+# US total population size N = 309 million in 2010, 295.5 million in 2005
+# # Net population growth rate 0.005 (0.5%) annually
+# Waning of natural immunity after 6 months (180 days) due to changes in circulating influenza viruses from year to year
+# vaccine effectiveness: 60%
+# Effective vaccine coverage: 9-10% population yearly
+
+
+
+Initial_values = c(S=295000000, I=1, R=0, Itotal=1, V=0)
+parameters = c(beta=0.26, sigma=0.2, Dur = 180, b=0.000013698, v=0.0005479, rr=0.4)
+
+# time
+time=seq(from=1, to=5475, by=1)
+
+# model equation-classical SIR ####
+
+sir_model_classical <-function(time,state,parameters){
+  with(as.list(c(state,parameters)),{
+    N=S+I+R+V
+    F_conventional = beta*(I/N)
+    F_V = rr*F_conventional
+    w = 1/Dur
+    dS = -F_conventional*S + w*R + b*N +w*V - v*N
+    dI = F_conventional*S + F_V*V - sigma*I
+    dR = sigma*I - w*R
+    dItotal = F_conventional*S
+    dV = v*N - F_V*V - w*V
+    
+    return(list(c(dS,dI,dR,dItotal,dV)))
+  }
+  )
+}
+
+#solving the equations
+SIR_model_classical = as.data.frame(ode(y = Initial_values,
+                                        func = sir_model_classical,
+                                        parms = parameters,
+                                        times = time)) 
+
+# plot output Classical SIR model
+SIR_model_classical$N = SIR_model_classical$S+SIR_model_classical$I+SIR_model_classical$R+SIR_model_classical$V
+SIR_model_classical$N_per = 100*SIR_model_classical$N/SIR_model_classical$N
+SIR_model_classical$S_per = 100*SIR_model_classical$S/SIR_model_classical$N
+SIR_model_classical$I_per = 100*SIR_model_classical$I/SIR_model_classical$N
+SIR_model_classical$R_per = 100*SIR_model_classical$R/SIR_model_classical$N
+SIR_model_classical$V_per = 100*SIR_model_classical$V/SIR_model_classical$N
+SIR_model_classical$Itotal_per = 100*SIR_model_classical$Itotal/SIR_model_classical$N
+
+plot(SIR_model_classical$time,
+     SIR_model_classical$I_per,type = "l", col="red",
+     ylab = "Proportion, %", ylim = c(0,100),
+     xlab = "Arbitrary time, t", xlim=c(0,5475))
+lines(SIR_model_classical$time, SIR_model_classical$N_per)
+lines(SIR_model_classical$time, SIR_model_classical$V_per, col="orange")
+lines(SIR_model_classical$time, SIR_model_classical$S_per, col="green")
+lines(SIR_model_classical$time, SIR_model_classical$R_per, col="blue")
+title("Conventional SIR: Influenza (r0=1.3)", cex=0.8, adj=0)
+
+write.csv(SIR_model_classical, file = "influenza_classicSIR_V.csv")
+
+# calculating disease burden over year - by cases
+
+Y1 = SIR_model_classical$Itotal[365]
+Y2 = SIR_model_classical$Itotal[730]
+Y3 = SIR_model_classical$Itotal[1095]
+Y4 = SIR_model_classical$Itotal[1460]
+Y5 = SIR_model_classical$Itotal[1825]
+Y6 = SIR_model_classical$Itotal[2190]
+Y7 = SIR_model_classical$Itotal[2555]
+Y8 = SIR_model_classical$Itotal[2920]
+Y9 = SIR_model_classical$Itotal[3285]
+Y10 = SIR_model_classical$Itotal[3650]
+Y11 = SIR_model_classical$Itotal[4015]
+Y12 = SIR_model_classical$Itotal[4380]
+Y13 = SIR_model_classical$Itotal[4745]
+Y14 = SIR_model_classical$Itotal[5110]
+
+Year1 = SIR_model_classical$Itotal[1:365] 
+Year2 = SIR_model_classical$Itotal[366:730]-Y1
+Year3 = SIR_model_classical$Itotal[731:1095]-Y2
+Year4 = SIR_model_classical$Itotal[1096:1460]-Y3
+Year5 = SIR_model_classical$Itotal[1461:1825]-Y4
+Year6 = SIR_model_classical$Itotal[1826:2190]-Y5
+Year7 = SIR_model_classical$Itotal[2191:2555]-Y6
+Year8 = SIR_model_classical$Itotal[2556:2920]-Y7
+Year9 = SIR_model_classical$Itotal[2921:3285]-Y8
+Year10 = SIR_model_classical$Itotal[3286:3650]-Y9
+Year11 = SIR_model_classical$Itotal[3651:4015]-Y10
+Year12 = SIR_model_classical$Itotal[4016:4380]-Y11
+Year13 = SIR_model_classical$Itotal[4381:4745]-Y12
+Year14 = SIR_model_classical$Itotal[4746:5110]-Y13
+Year15 = SIR_model_classical$Itotal[5111:5475]-Y14
+
+burden_classicalSIR_V_cases = as.data.frame(cbind(Year1,Year2,Year3,Year4,Year5,Year6,
+                                          Year7,Year8,Year9,Year10,Year11,Year12,Year13,Year14,Year15))
+
+View(burden_classicalSIR_V_cases)
+print(burden_classicalSIR_V_cases[365,])
+
+# calculating disease burden over year - by proportion
+
+P1 = SIR_model_classical$Itotal_per[365]
+P2 = SIR_model_classical$Itotal_per[730]
+P3 = SIR_model_classical$Itotal_per[1095]
+P4 = SIR_model_classical$Itotal_per[1460]
+P5 = SIR_model_classical$Itotal_per[1825]
+P6 = SIR_model_classical$Itotal_per[2190]
+P7 = SIR_model_classical$Itotal_per[2555]
+P8 = SIR_model_classical$Itotal_per[2920]
+P9 = SIR_model_classical$Itotal_per[3285]
+P10 = SIR_model_classical$Itotal_per[3650]
+P11 = SIR_model_classical$Itotal_per[4015]
+P12 = SIR_model_classical$Itotal_per[4380]
+P13 = SIR_model_classical$Itotal_per[4745]
+P14 = SIR_model_classical$Itotal_per[5110]
+
+PYear1 = SIR_model_classical$Itotal_per[1:365] 
+PYear2 = SIR_model_classical$Itotal_per[366:730]-P1
+PYear3 = SIR_model_classical$Itotal_per[731:1095]-P2
+PYear4 = SIR_model_classical$Itotal_per[1096:1460]-P3
+PYear5 = SIR_model_classical$Itotal_per[1461:1825]-P4
+PYear6 = SIR_model_classical$Itotal_per[1826:2190]-P5
+PYear7 = SIR_model_classical$Itotal_per[2191:2555]-P6
+PYear8 = SIR_model_classical$Itotal_per[2556:2920]-P7
+PYear9 = SIR_model_classical$Itotal_per[2921:3285]-P8
+PYear10 = SIR_model_classical$Itotal_per[3286:3650]-P9
+PYear11 = SIR_model_classical$Itotal_per[3651:4015]-P10
+PYear12 = SIR_model_classical$Itotal_per[4016:4380]-P11
+PYear13 = SIR_model_classical$Itotal_per[4381:4745]-P12
+PYear14 = SIR_model_classical$Itotal_per[4746:5110]-P13
+PYear15 = SIR_model_classical$Itotal_per[5111:5475]-P14
+
+burden_classicalSIR_V_per = as.data.frame(cbind(PYear1,PYear2,PYear3,PYear4,
+                                                PYear5,PYear6,PYear7,PYear8,
+                                                PYear9,PYear10,PYear11,PYear12,
+                                                PYear13,PYear14,PYear15))
+
+
+View(burden_classicalSIR_V_per)
+print(burden_classicalSIR_V_per[365,])
+
+# Model A ####
+
+sir_model_A <-function(time,state,parameters){
+  with(as.list(c(state,parameters)),{
+    N=S+I+R+V
+    F_A = beta*(I/N)*(S/N)
+    F_V = rr*F_A
+    w = 1/Dur
+    dS = -F_A*S + w*R + b*N +w*V - v*N
+    dI = F_A*S + F_V*V - sigma*I
+    dR = sigma*I - w*R
+    dItotal = F_A*S
+    dV = v*N - F_V*V - w*V
+    
+    return(list(c(dS,dI,dR,dItotal,dV)))
+  }
+  )
+}
+
+#solving the equations
+SIR_model_A = as.data.frame(ode(y = Initial_values,
+                                func = sir_model_A,
+                                parms = parameters,
+                                times = time)) 
+
+# plot output SIR model B
+SIR_model_A$N = SIR_model_A$S+SIR_model_A$I+SIR_model_A$R+SIR_model_A$V
+SIR_model_A$N_per = 100*SIR_model_A$N/SIR_model_A$N
+SIR_model_A$S_per = 100*SIR_model_A$S/SIR_model_A$N
+SIR_model_A$I_per = 100*SIR_model_A$I/SIR_model_A$N
+SIR_model_A$R_per = 100*SIR_model_A$R/SIR_model_A$N
+SIR_model_A$V_per = 100*SIR_model_A$V/SIR_model_A$N
+SIR_model_A$Itotal_per = 100*SIR_model_A$Itotal/SIR_model_A$N
+
+plot(SIR_model_A$time,
+     SIR_model_A$I_per,type = "l", col="red",
+     ylab = "Proportion, %", ylim = c(0,100),
+     xlab = "Arbitrary time, t", xlim=c(0,5475))
+lines(SIR_model_A$time, SIR_model_A$N_per)
+lines(SIR_model_A$time, SIR_model_A$V_per, col="orange")
+lines(SIR_model_A$time, SIR_model_A$R_per, col="blue")
+lines(SIR_model_A$time, SIR_model_A$S_per,col="green")
+title("SIR Model B: Influenza (r0=1.3)", cex=0.8, adj=0)
+
+write.csv(SIR_model_A, file = "influenza_SIRA_V.csv")
+
+# calculating disease burden over year - by cases
+
+A1 = SIR_model_A$Itotal[365]
+A2 = SIR_model_A$Itotal[730]
+A3 = SIR_model_A$Itotal[1095]
+A4 = SIR_model_A$Itotal[1460]
+A5 = SIR_model_A$Itotal[1825]
+A6 = SIR_model_A$Itotal[2190]
+A7 = SIR_model_A$Itotal[2555]
+A8 = SIR_model_A$Itotal[2920]
+A9 = SIR_model_A$Itotal[3285]
+A10 = SIR_model_A$Itotal[3650]
+A11 = SIR_model_A$Itotal[4015]
+A12 = SIR_model_A$Itotal[4380]
+A13 = SIR_model_A$Itotal[4745]
+A14 = SIR_model_A$Itotal[5110]
+
+# disease burden
+A_Year1 = SIR_model_A$Itotal[1:365] 
+A_Year2 = SIR_model_A$Itotal[366:730]-A1
+A_Year3 = SIR_model_A$Itotal[731:1095]-A2
+A_Year4 = SIR_model_A$Itotal[1096:1460]-A3
+A_Year5 = SIR_model_A$Itotal[1461:1825]-A4
+A_Year6 = SIR_model_A$Itotal[1826:2190]-A5
+A_Year7 = SIR_model_A$Itotal[2191:2555]-A6
+A_Year8 = SIR_model_A$Itotal[2556:2920]-A7
+A_Year9 = SIR_model_A$Itotal[2921:3285]-A8
+A_Year10 = SIR_model_A$Itotal[3286:3650]-A9
+A_Year11 = SIR_model_A$Itotal[3651:4015]-A10
+A_Year12 = SIR_model_A$Itotal[4016:4380]-A11
+A_Year13 = SIR_model_A$Itotal[4381:4745]-A12
+A_Year14 = SIR_model_A$Itotal[4746:5110]-A13
+A_Year15 = SIR_model_A$Itotal[5111:5475]-A14
+
+burden_ASIR_V_cases = as.data.frame(cbind(A_Year1,A_Year2,A_Year3,A_Year4,
+                                          A_Year5,A_Year6,A_Year7,A_Year8,
+                                          A_Year9,A_Year10,A_Year11,A_Year12,
+                                          A_Year13,A_Year14,A_Year15))
+
+View(burden_ASIR_V_cases)
+print(burden_ASIR_V_cases[365,])
+
+
+# calculating disease burden over year - by proportion
+
+PA1 = SIR_model_A$Itotal_per[365]
+PA2 = SIR_model_A$Itotal_per[730]
+PA3 = SIR_model_A$Itotal_per[1095]
+PA4 = SIR_model_A$Itotal_per[1460]
+PA5 = SIR_model_A$Itotal_per[1825]
+PA6 = SIR_model_A$Itotal_per[2190]
+PA7 = SIR_model_A$Itotal_per[2555]
+PA8 = SIR_model_A$Itotal_per[2920]
+PA9 = SIR_model_A$Itotal_per[3285]
+PA10 = SIR_model_A$Itotal_per[3650]
+PA11 = SIR_model_A$Itotal_per[4015]
+PA12 = SIR_model_A$Itotal_per[4380]
+PA13 = SIR_model_A$Itotal_per[4745]
+PA14 = SIR_model_A$Itotal_per[5110]
+
+# disease burden
+PA_Year1 = SIR_model_A$Itotal_per[1:365] 
+PA_Year2 = SIR_model_A$Itotal_per[366:730]-PA1
+PA_Year3 = SIR_model_A$Itotal_per[731:1095]-PA2
+PA_Year4 = SIR_model_A$Itotal_per[1096:1460]-PA3
+PA_Year5 = SIR_model_A$Itotal_per[1461:1825]-PA4
+PA_Year6 = SIR_model_A$Itotal_per[1826:2190]-PA5
+PA_Year7 = SIR_model_A$Itotal_per[2191:2555]-PA6
+PA_Year8 = SIR_model_A$Itotal_per[2556:2920]-PA7
+PA_Year9 = SIR_model_A$Itotal_per[2921:3285]-PA8
+PA_Year10 = SIR_model_A$Itotal_per[3286:3650]-PA9
+PA_Year11 = SIR_model_A$Itotal_per[3651:4015]-PA10
+PA_Year12 = SIR_model_A$Itotal_per[4016:4380]-PA11
+PA_Year13 = SIR_model_A$Itotal_per[4381:4745]-PA12
+PA_Year14 = SIR_model_A$Itotal_per[4746:5110]-PA13
+PA_Year15 = SIR_model_A$Itotal_per[5111:5475]-PA14
+
+burden_ASIR_V_per = as.data.frame(cbind(PA_Year1,PA_Year2,PA_Year3,PA_Year4,
+                                        PA_Year5,PA_Year6,PA_Year7,PA_Year8,
+                                        PA_Year9,PA_Year10,PA_Year11,PA_Year12,
+                                        PA_Year13,PA_Year14,PA_Year15))
+
+View(burden_ASIR_V_per)
+print(burden_ASIR_V_per[365,])
+
+
+
+# Model B ####
+
+sir_model_B <-function(time,state,parameters){
+  with(as.list(c(state,parameters)),{
+    N=S+I+R+V
+    F_B = beta*(I/N)*((N-R-V)/N)
+    F_V = rr*F_B
+    w = 1/Dur
+    dS = -F_B*S + w*R + b*N +w*V - v*N
+    dI = F_B*S + F_V*V - sigma*I
+    dR = sigma*I - w*R
+    dItotal = F_B*S
+    dV = v*N - F_V*V - w*V
+    
+    return(list(c(dS,dI,dR,dItotal,dV)))
+  }
+  )
+}
+
+#solving the equations
+SIR_model_B = as.data.frame(ode(y = Initial_values,
+                                func = sir_model_B,
+                                parms = parameters,
+                                times = time)) 
+
+# plot output SIR model B
+SIR_model_B$N = SIR_model_B$S+SIR_model_B$I+SIR_model_B$R+SIR_model_B$V
+SIR_model_B$N_per = 100*SIR_model_B$N/SIR_model_B$N
+SIR_model_B$S_per = 100*SIR_model_B$S/SIR_model_B$N
+SIR_model_B$I_per = 100*SIR_model_B$I/SIR_model_B$N
+SIR_model_B$R_per = 100*SIR_model_B$R/SIR_model_B$N
+SIR_model_B$V_per = 100*SIR_model_B$V/SIR_model_B$N
+SIR_model_B$Itotal_per = 100*SIR_model_B$Itotal/SIR_model_B$N
+
+plot(SIR_model_B$time,
+     SIR_model_B$I_per,type = "l", col="red",
+     ylab = "Proportion, %", ylim = c(0,100),
+     xlab = "Arbitrary time, t", xlim=c(0,5475))
+lines(SIR_model_B$time, SIR_model_B$N_per)
+lines(SIR_model_B$time, SIR_model_B$V_per, col="orange")
+lines(SIR_model_B$time, SIR_model_B$R_per, col="blue")
+lines(SIR_model_B$time, SIR_model_B$S_per,col="green")
+title("SIR Model B: Influenza (r0=1.3)", cex=0.8, adj=0)
+
+write.csv(SIR_model_B, file = "influenza_SIRB_V.csv")
+
+# calculating disease burden over year - by cases
+
+B1 = SIR_model_B$Itotal[365]
+B2 = SIR_model_B$Itotal[730]
+B3 = SIR_model_B$Itotal[1095]
+B4 = SIR_model_B$Itotal[1460]
+B5 = SIR_model_B$Itotal[1825]
+B6 = SIR_model_B$Itotal[2190]
+B7 = SIR_model_B$Itotal[2555]
+B8 = SIR_model_B$Itotal[2920]
+B9 = SIR_model_B$Itotal[3285]
+B10 = SIR_model_B$Itotal[3650]
+B11 = SIR_model_B$Itotal[4015]
+B12 = SIR_model_B$Itotal[4380]
+B13 = SIR_model_B$Itotal[4745]
+B14 = SIR_model_B$Itotal[5110]
+
+# disease burden
+B_Year1 = SIR_model_B$Itotal[1:365] 
+B_Year2 = SIR_model_B$Itotal[366:730]-B1
+B_Year3 = SIR_model_B$Itotal[731:1095]-B2
+B_Year4 = SIR_model_B$Itotal[1096:1460]-B3
+B_Year5 = SIR_model_B$Itotal[1461:1825]-B4
+B_Year6 = SIR_model_B$Itotal[1826:2190]-B5
+B_Year7 = SIR_model_B$Itotal[2191:2555]-B6
+B_Year8 = SIR_model_B$Itotal[2556:2920]-B7
+B_Year9 = SIR_model_B$Itotal[2921:3285]-B8
+B_Year10 = SIR_model_B$Itotal[3286:3650]-B9
+B_Year11 = SIR_model_B$Itotal[3651:4015]-B10
+B_Year12 = SIR_model_B$Itotal[4016:4380]-B11
+B_Year13 = SIR_model_B$Itotal[4381:4745]-B12
+B_Year14 = SIR_model_B$Itotal[4746:5110]-B13
+B_Year15 = SIR_model_B$Itotal[5111:5475]-B14
+
+burden_BSIR_V_cases = as.data.frame(cbind(B_Year1,B_Year2,B_Year3,B_Year4,
+                                          B_Year5,B_Year6,B_Year7,B_Year8,
+                                          B_Year9,B_Year10,B_Year11,B_Year12,
+                                          B_Year13,B_Year14,B_Year15))
+
+View(burden_BSIR_V_cases)
+print(burden_BSIR_V_cases[365,])
+
+
+# calculating disease burden over year - by proportion
+
+PB1 = SIR_model_B$Itotal_per[365]
+PB2 = SIR_model_B$Itotal_per[730]
+PB3 = SIR_model_B$Itotal_per[1095]
+PB4 = SIR_model_B$Itotal_per[1460]
+PB5 = SIR_model_B$Itotal_per[1825]
+PB6 = SIR_model_B$Itotal_per[2190]
+PB7 = SIR_model_B$Itotal_per[2555]
+PB8 = SIR_model_B$Itotal_per[2920]
+PB9 = SIR_model_B$Itotal_per[3285]
+PB10 = SIR_model_B$Itotal_per[3650]
+PB11 = SIR_model_B$Itotal_per[4015]
+PB12 = SIR_model_B$Itotal_per[4380]
+PB13 = SIR_model_B$Itotal_per[4745]
+PB14 = SIR_model_B$Itotal_per[5110]
+
+# disease burden
+PB_Year1 = SIR_model_B$Itotal_per[1:365] 
+PB_Year2 = SIR_model_B$Itotal_per[366:730]-PB1
+PB_Year3 = SIR_model_B$Itotal_per[731:1095]-PB2
+PB_Year4 = SIR_model_B$Itotal_per[1096:1460]-PB3
+PB_Year5 = SIR_model_B$Itotal_per[1461:1825]-PB4
+PB_Year6 = SIR_model_B$Itotal_per[1826:2190]-PB5
+PB_Year7 = SIR_model_B$Itotal_per[2191:2555]-PB6
+PB_Year8 = SIR_model_B$Itotal_per[2556:2920]-PB7
+PB_Year9 = SIR_model_B$Itotal_per[2921:3285]-PB8
+PB_Year10 = SIR_model_B$Itotal_per[3286:3650]-PB9
+PB_Year11 = SIR_model_B$Itotal_per[3651:4015]-PB10
+PB_Year12 = SIR_model_B$Itotal_per[4016:4380]-PB11
+PB_Year13 = SIR_model_B$Itotal_per[4381:4745]-PB12
+PB_Year14 = SIR_model_B$Itotal_per[4746:5110]-PB13
+PB_Year15 = SIR_model_B$Itotal_per[5111:5475]-PB14
+
+burden_BSIR_V_per = as.data.frame(cbind(PB_Year1,PB_Year2,PB_Year3,PB_Year4,
+                                        PB_Year5,PB_Year6,PB_Year7,PB_Year8,
+                                        PB_Year9,PB_Year10,PB_Year11,PB_Year12,
+                                        PB_Year13,PB_Year14,PB_Year15))
+
+View(burden_BSIR_V_per)
+print(burden_BSIR_V_per[365,])
+
+
+# Plot Influenza disease burden
+
+# Source:  https://www.cdc.gov/flu/about/burden/index.html
+# CDC estimates disease burden of influenza
+Year = c(2010,2011,2012,2013,2014,2015,2016,2017,2018,2019)
+US_Population = c(309300000,311600000,313900000,316100000,318400000,
+                  320700000,323100000,325100000,327200000,328200000) 
+CDC_cases = c(21000000,9300000,34000000,30000000,30000000,
+              24000000,29000000,45000000,36000000,38000000)
+`95%LL_cases` = c(20000000,8700000,32000000,28000000,29000000,
+            20000000,25000000,39000000,31000000,34000000) 
+`95%UL_cases` = c(25000000,12000000,38000000,33000000,33000000,
+            33000000,45000000,58000000,45000000,47000000)
+
+# Estimate by conventional SIR model
+print(burden_classicalSIR_V_cases[365,c(6:15)])
+Classical_SIR_cases = c(101011824,101404608,101901793,102417099,102933461,
+                        103450392,103969117,104490249,105013971,105540324)
+
+print(burden_classicalSIR_V_per[365,c(6:15)])
+Classical_SIR_proportion = c(32.4,32.2,32.1,31.9,31.8,31.6,31.4,31.3,31.1,31.0)
+
+# Estimate by Model A
+print(burden_ASIR_V_cases[365,c(6:15)])
+Model_A_cases = c(25956059,26316254,26372219,26522077,26653328,
+                  26785953,26920937,27055571,27191272,27327545)
+
+print(burden_ASIR_V_per[365,c(6:15)])
+Model_A_proportion = c(8.3,8.4,8.3,8.3,8.2,8.2,8.1,8.1,8.1,8.0)
+
+# Estimate by Model B
+print(burden_BSIR_V_cases[365,c(6:15)])
+Model_B_cases = c(26277870,26718904,26750523,26907316,27041183, 
+                 27174577,27312157,27448508,27586242, 27724488)
+
+print(burden_BSIR_V_per[365,c(6:15)])
+Model_B_proportion = c(8.4,8.5,8.4,8.4,8.3,8.3,8.3,8.2,8.2,8.1)
+
+Influenza = as.data.frame(cbind(Year,US_Population,CDC_cases,
+                                `95%LL_cases`,`95%UL_cases`,
+                                Classical_SIR_cases,Classical_SIR_proportion,
+                                Model_A_cases,Model_A_proportion,
+                                Model_B_cases,Model_B_proportion))
+
+Influenza$CDC_proprotion = 100*Influenza$CDC_cases/Influenza$US_Population
+Influenza$`95%LL_proportion` = 100*Influenza$`95%LL_cases`/Influenza$US_Population
+Influenza$`95%UL_proportion` = 100*Influenza$`95%UL_cases`/Influenza$US_Population
+
+View(Influenza)
+
+# Plot graph: Compare Conventional SIR, Model A, Model B and CDC estimate
+
+par(mar=c(5.9, 4.9, 4.9, 8.9), xpd=TRUE)
+plot(Influenza$Year,Influenza$CDC_proprotion, type="b",pch=15,
+     ylab = "Proportion of population, %", ylim = c(0,35),
+     xlab = "Year",xlim = c(2010,2019))
+lines(Influenza$Year, Influenza$`95%LL_proportion`, type = "b", pch=18)
+lines(Influenza$Year, Influenza$`95%UL_proportion`, type = "b", pch=17)
+lines(Influenza$Year, Influenza$Classical_SIR_proportion, type = "b", col="red", pch=16)
+lines(Influenza$Year, Influenza$Model_A_proportion, type = "b", col="green", pch=16)
+lines(Influenza$Year, Influenza$Model_B_proportion, type = "b", col="blue", pch=16)
+title("Simulation of U.S Influenza Disease Burden (2010-2019)",cex=0.5)
+
+legend("topright",inset=c(-0.4,0),cex=0.8, 
+       legend = c("Conventional SIR","95% UL","CDC estimate","95% LL", "Model A","Model B"),
+       col = c("red","black","black","black","green","blue"),
+       pch = c(16,17,15,18,16,16))
 
 #************************ THE END*******************************
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
