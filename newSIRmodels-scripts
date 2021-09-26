@@ -646,7 +646,7 @@ plot(VMfinal_B$time,
      ylab = "Proportion, %", ylim = c(0,0.1),
      xlab = "Arbitrary time, t")
 abline(v=67)
-title("C) Model B (v=1.0)", adj=0)
+title("C) Model B (v=1.0%)", adj=0)
 text(x=90, y=0.1, "HIT was achieved at t=67",cex=0.8, adj=0)
 
 
