@@ -1229,7 +1229,7 @@ sir_model_classical <-function(time,state,parameters){
     dS = -F_conventional*S + w*R + b*N +w*V - v*N/d
     dI = F_conventional*S + F_V*V - sigma*I
     dR = sigma*I - w*R
-    dItotal = F_conventional*S
+    dItotal = F_conventional*S + F_V*V
     dV = v*N/d - F_V*V - w*V
     
     return(list(c(dS,dI,dR,dItotal,dV)))
@@ -1357,7 +1357,7 @@ sir_model_A <-function(time,state,parameters){
     dS = -F_A*S + w*R + b*N +w*V - v*N/d
     dI = F_A*S + F_V*V - sigma*I
     dR = sigma*I - w*R
-    dItotal = F_A*S
+    dItotal = F_A*S + F_V*V
     dV = v*N/d - F_V*V - w*V
     
     return(list(c(dS,dI,dR,dItotal,dV)))
@@ -1490,7 +1490,7 @@ sir_model_B <-function(time,state,parameters){
     dS = -F_B*S + w*R + b*N +w*V - v*N/d
     dI = F_B*S + F_V*V - sigma*I
     dR = sigma*I - w*R
-    dItotal = F_B*S
+    dItotal = F_B*S + F_V*V
     dV = v*N/d - F_V*V - w*V
     
     return(list(c(dS,dI,dR,dItotal,dV)))
