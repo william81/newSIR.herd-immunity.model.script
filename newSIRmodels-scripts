@@ -1200,26 +1200,27 @@ write.csv(VMfinal_B, file = "5I_ModelB_VaccineModel_v0.1.csv")
 # @@@@@@@@@@@@@@ Disclaimers  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 # The simulation below does not aim to capture the actual dynamics of seasonal influenza in US.
 # It aims to demonstrate differences between the conventional SIR model and newly proposed models.
-# Users may modify the parameters during the simulation to obtain different projections.
+# Researchers may modify the parameters during the simulation to obtain different projections.
 # Therefore, projection may be different from the article due to different parameters used in the simulations.
 # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 # WITH Vaccination #####
 
-# Seasonal Influenza, R0 = 1.3
+# Seasonal Influenza, R0 = 1.3-1.5
 # Duration of sickness/contagiousness = 5-7 days
 # US total population size N = 309 million in 2010, 295.5 million in 2005
 # Net population growth rate 0.5% (0.005) annually: b=0.000013699 per day
 # Waning of natural immunity after 6 - 12 months (180 - 365 days) due to changes in circulating influenza viruses from year to year
 # immunity duration: Dur = 180 - 365
-# vaccine effectiveness 60%: rr = 0.4
+# vaccine effectiveness 30%-60%: rr = 0.7-0.4
 # 50% - 60% (0.5-0.6) vaccine coverage: v=0.0013699-0.0016438
 # duration taken to develop full immunity after vaccination 14 days
 # 15 years (t=1 to t=5475)
 
-Initial_values = c(S=295000000, I=1, R=0, Itotal=1, V=0)
-parameters = c(beta=0.2857, sigma=0.1428, Dur = 180, 
-               b=0.000013699, v=0.0016438, rr=0.4)
+rm(list=ls())
+Initial_values = c(S=295000000, I=1, R=0, Itotal=1, V1=0,V2=0)
+parameters = c(beta=0.3, sigma=0.2, Dur = 180, Dur2 = 14,
+               b=0.000013699, v=0.0013699, rr=0.7)
 
 # time
 time=seq(from=1, to=5475, by=1)
@@ -1228,17 +1229,19 @@ time=seq(from=1, to=5475, by=1)
 
 sir_model_classical <-function(time,state,parameters){
   with(as.list(c(state,parameters)),{
-    N=S+I+R+V
+    N=S+I+R+V1+V2
     F_conventional = beta*(I/N)
     F_V = rr*F_conventional
     w = 1/Dur
-    dS = -F_conventional*S + w*R + b*N +w*V - v*N
-    dI = F_conventional*S + F_V*V - sigma*I
+    gamma = 1/Dur2
+    dS = -F_conventional*S + w*R + b*N +w*V2 - v*N
+    dI = F_conventional*S + F_V*V2 - sigma*I
     dR = sigma*I - w*R
-    dItotal = F_conventional*S + F_V*V
-    dV = v*N - F_V*V - w*V
+    dItotal = F_conventional*S + F_V*V2
+    dV1 = v*N - gamma*V1
+    dV2 = gamma*V1 - F_V*V2 - w*V2
     
-    return(list(c(dS,dI,dR,dItotal,dV)))
+    return(list(c(dS,dI,dR,dItotal,dV1,dV2)))
   }
   )
 }
@@ -1250,12 +1253,17 @@ SIR_model_classical = as.data.frame(ode(y = Initial_values,
                                         times = time)) 
 
 # plot output Classical SIR model
-SIR_model_classical$N = SIR_model_classical$S+SIR_model_classical$I+SIR_model_classical$R+SIR_model_classical$V
+SIR_model_classical$N = SIR_model_classical$S+
+                        SIR_model_classical$I+
+                        SIR_model_classical$R+
+                        SIR_model_classical$V1+
+                        SIR_model_classical$V2
 SIR_model_classical$N_per = 100*SIR_model_classical$N/SIR_model_classical$N
 SIR_model_classical$S_per = 100*SIR_model_classical$S/SIR_model_classical$N
 SIR_model_classical$I_per = 100*SIR_model_classical$I/SIR_model_classical$N
 SIR_model_classical$R_per = 100*SIR_model_classical$R/SIR_model_classical$N
-SIR_model_classical$V_per = 100*SIR_model_classical$V/SIR_model_classical$N
+SIR_model_classical$V1_per = 100*SIR_model_classical$V1/SIR_model_classical$N
+SIR_model_classical$V2_per = 100*SIR_model_classical$V2/SIR_model_classical$N
 SIR_model_classical$Itotal_per = 100*SIR_model_classical$Itotal/SIR_model_classical$N
 
 plot(SIR_model_classical$time,
@@ -1263,7 +1271,7 @@ plot(SIR_model_classical$time,
      ylab = "Proportion, %", ylim = c(0,100),
      xlab = "Arbitrary time, t", xlim=c(0,5000))
 lines(SIR_model_classical$time, SIR_model_classical$N_per)
-lines(SIR_model_classical$time, SIR_model_classical$V_per, col="orange")
+lines(SIR_model_classical$time, SIR_model_classical$V2_per, col="orange")
 lines(SIR_model_classical$time, SIR_model_classical$S_per, col="green")
 lines(SIR_model_classical$time, SIR_model_classical$R_per, col="blue")
 title("A) Conventional SIR", cex=0.8, adj=0)
@@ -1356,17 +1364,19 @@ print(burden_classicalSIR_V_per[365,])
 
 sir_model_A <-function(time,state,parameters){
   with(as.list(c(state,parameters)),{
-    N=S+I+R+V
+    N=S+I+R+V1+V2
     F_A = beta*(I/N)*(S/N)
     F_V = rr*F_A
     w = 1/Dur
-    dS = -F_A*S + w*R + b*N +w*V - v*N
-    dI = F_A*S + F_V*V - sigma*I
+    gamma = 1/Dur2
+    dS = -F_A*S + w*R + b*N +w*V2 - v*N
+    dI = F_A*S + F_V*V2 - sigma*I
     dR = sigma*I - w*R
-    dItotal = F_A*S + F_V*V
-    dV = v*N - F_V*V - w*V
+    dItotal = F_A*S + F_V*V2
+    dV1 = v*N - gamma*V1
+    dV2 = gamma*V1 - F_V*V2 - w*V2
     
-    return(list(c(dS,dI,dR,dItotal,dV)))
+    return(list(c(dS,dI,dR,dItotal,dV1,dV2)))
   }
   )
 }
@@ -1378,12 +1388,17 @@ SIR_model_A = as.data.frame(ode(y = Initial_values,
                                 times = time)) 
 
 # plot output SIR model B
-SIR_model_A$N = SIR_model_A$S+SIR_model_A$I+SIR_model_A$R+SIR_model_A$V
+SIR_model_A$N = SIR_model_A$S+
+                SIR_model_A$I+
+                SIR_model_A$R+
+                SIR_model_A$V1+
+                SIR_model_A$V2
 SIR_model_A$N_per = 100*SIR_model_A$N/SIR_model_A$N
 SIR_model_A$S_per = 100*SIR_model_A$S/SIR_model_A$N
 SIR_model_A$I_per = 100*SIR_model_A$I/SIR_model_A$N
 SIR_model_A$R_per = 100*SIR_model_A$R/SIR_model_A$N
-SIR_model_A$V_per = 100*SIR_model_A$V/SIR_model_A$N
+SIR_model_A$V1_per = 100*SIR_model_A$V1/SIR_model_A$N
+SIR_model_A$V2_per = 100*SIR_model_A$V2/SIR_model_A$N
 SIR_model_A$Itotal_per = 100*SIR_model_A$Itotal/SIR_model_A$N
 
 plot(SIR_model_A$time,
@@ -1391,7 +1406,7 @@ plot(SIR_model_A$time,
      ylab = "Proportion, %", ylim = c(0,100),
      xlab = "Arbitrary time, t", xlim=c(0,5475))
 lines(SIR_model_A$time, SIR_model_A$N_per)
-lines(SIR_model_A$time, SIR_model_A$V_per, col="orange")
+lines(SIR_model_A$time, SIR_model_A$V2_per, col="orange")
 lines(SIR_model_A$time, SIR_model_A$R_per, col="blue")
 lines(SIR_model_A$time, SIR_model_A$S_per,col="green")
 title("B) SIR Model A", cex=0.8, adj=0)
@@ -1489,17 +1504,19 @@ print(burden_ASIR_V_per[365,])
 
 sir_model_B <-function(time,state,parameters){
   with(as.list(c(state,parameters)),{
-    N=S+I+R+V
-    F_B = beta*(I/N)*((N-R-V)/N)
+    N=S+I+R+V1+V2
+    F_B = beta*(I/N)*((N-R-V2)/N)
     F_V = rr*F_B
     w = 1/Dur
-    dS = -F_B*S + w*R + b*N +w*V - v*N
-    dI = F_B*S + F_V*V - sigma*I
+    gamma=1/Dur2
+    dS = -F_B*S + w*R + b*N +w*V2 - v*N
+    dI = F_B*S + F_V*V2 - sigma*I
     dR = sigma*I - w*R
-    dItotal = F_B*S + F_V*V
-    dV = v*N - F_V*V - w*V
+    dItotal = F_B*S + F_V*V2
+    dV1 = v*N - gamma*V1
+    dV2 = gamma*V1 - F_V*V2 - w*V2
     
-    return(list(c(dS,dI,dR,dItotal,dV)))
+    return(list(c(dS,dI,dR,dItotal,dV1,dV2)))
   }
   )
 }
@@ -1511,12 +1528,17 @@ SIR_model_B = as.data.frame(ode(y = Initial_values,
                                 times = time)) 
 
 # plot output SIR model B
-SIR_model_B$N = SIR_model_B$S+SIR_model_B$I+SIR_model_B$R+SIR_model_B$V
+SIR_model_B$N = SIR_model_B$S+
+                SIR_model_B$I+
+                SIR_model_B$R+
+                SIR_model_B$V1+
+                SIR_model_B$V2
 SIR_model_B$N_per = 100*SIR_model_B$N/SIR_model_B$N
 SIR_model_B$S_per = 100*SIR_model_B$S/SIR_model_B$N
 SIR_model_B$I_per = 100*SIR_model_B$I/SIR_model_B$N
 SIR_model_B$R_per = 100*SIR_model_B$R/SIR_model_B$N
-SIR_model_B$V_per = 100*SIR_model_B$V/SIR_model_B$N
+SIR_model_B$V1_per = 100*SIR_model_B$V1/SIR_model_B$N
+SIR_model_B$V2_per = 100*SIR_model_B$V2/SIR_model_B$N
 SIR_model_B$Itotal_per = 100*SIR_model_B$Itotal/SIR_model_B$N
 
 plot(SIR_model_B$time,
@@ -1524,7 +1546,7 @@ plot(SIR_model_B$time,
      ylab = "Proportion, %", ylim = c(0,100),
      xlab = "Arbitrary time, t", xlim=c(0,5475))
 lines(SIR_model_B$time, SIR_model_B$N_per)
-lines(SIR_model_B$time, SIR_model_B$V_per, col="orange")
+lines(SIR_model_B$time, SIR_model_B$V2_per, col="orange")
 lines(SIR_model_B$time, SIR_model_B$R_per, col="blue")
 lines(SIR_model_B$time, SIR_model_B$S_per,col="green")
 title("C) SIR Model B", cex=0.8, adj=0)
@@ -1675,7 +1697,7 @@ write.csv(Influenza, file = "6D_Influenza_DiseaseBurden_Projection.csv")
 
 par(mar=c(5.9, 4.9, 4.9, 8.9), xpd=TRUE)
 plot(Influenza$Year,Influenza$CDC_proprotion, type="b",pch=15,
-     ylab = "Proportion of population, %", ylim = c(0,100),
+     ylab = "Proportion of population, %", ylim = c(0,60),
      xlab = "Year",xlim = c(2010,2019))
 lines(Influenza$Year, Influenza$`95%LL_proportion`, type = "b", pch=18)
 lines(Influenza$Year, Influenza$`95%UL_proportion`, type = "b", pch=17)
@@ -1690,7 +1712,6 @@ legend("topright",inset=c(-0.4,0),cex=0.8,
        pch = c(16,17,15,18,16,16))
 
 #************************ THE END*******************************
-
 
 # references
 citation()
