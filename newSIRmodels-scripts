@@ -1195,25 +1195,24 @@ write.csv(VMfinal_B, file = "5I_ModelB_VaccineModel_v0.1.csv")
 #**********simulation of other infectious diseases**********####
 #****************************************************************
 
-
 # @@@@@@@@@@@@@@ seasonal influenza in US @@@@@@@@@@@@@@@@@@
 
 # WITH Vaccination #####
 
 # Seasonal Influenza, R0 = 1.3
-# Duration of sickness/contagiousness = 5 days
+# Duration of sickness/contagiousness = 5-7 days
 # US total population size N = 309 million in 2010, 295.5 million in 2005
-# Net population growth rate 0.5% (0.005) annually: b=0.000013698 per day
+# Net population growth rate 0.5% (0.005) annually: b=0.000013699 per day
 # Waning of natural immunity after 6 - 12 months (180 - 365 days) due to changes in circulating influenza viruses from year to year
-# immunity duration: Dur = 270
+# immunity duration: Dur = 180 - 365
 # vaccine effectiveness 60%: rr = 0.4
-# 50% (0.5) vaccine coverage: v=0.0013699
-# duration taken to develop full immunity after vaccination: d = 14
+# 50% - 60% (0.5-0.6) vaccine coverage: v=0.0013699-0.0016438
+# duration taken to develop full immunity after vaccination 14 days
 # 15 years (t=1 to t=5475)
 
-
 Initial_values = c(S=295000000, I=1, R=0, Itotal=1, V=0)
-parameters = c(beta=0.26, sigma=0.2, Dur = 270, b=0.000013699, v=0.0013699, rr=0.4, d=14)
+parameters = c(beta=0.2857, sigma=0.1428, Dur = 180, 
+               b=0.000013699, v=0.0016438, rr=0.4)
 
 # time
 time=seq(from=1, to=5475, by=1)
@@ -1226,11 +1225,11 @@ sir_model_classical <-function(time,state,parameters){
     F_conventional = beta*(I/N)
     F_V = rr*F_conventional
     w = 1/Dur
-    dS = -F_conventional*S + w*R + b*N +w*V - v*N/d
+    dS = -F_conventional*S + w*R + b*N +w*V - v*N
     dI = F_conventional*S + F_V*V - sigma*I
     dR = sigma*I - w*R
     dItotal = F_conventional*S + F_V*V
-    dV = v*N/d - F_V*V - w*V
+    dV = v*N - F_V*V - w*V
     
     return(list(c(dS,dI,dR,dItotal,dV)))
   }
@@ -1298,7 +1297,7 @@ Year14 = SIR_model_classical$Itotal[4746:5110]-Y13
 Year15 = SIR_model_classical$Itotal[5111:5475]-Y14
 
 burden_classicalSIR_V_cases = as.data.frame(cbind(Year1,Year2,Year3,Year4,Year5,Year6,
-                                          Year7,Year8,Year9,Year10,Year11,Year12,Year13,Year14,Year15))
+                                                  Year7,Year8,Year9,Year10,Year11,Year12,Year13,Year14,Year15))
 
 #View(burden_classicalSIR_V_cases)
 print(burden_classicalSIR_V_cases[365,])
@@ -1354,11 +1353,11 @@ sir_model_A <-function(time,state,parameters){
     F_A = beta*(I/N)*(S/N)
     F_V = rr*F_A
     w = 1/Dur
-    dS = -F_A*S + w*R + b*N +w*V - v*N/d
+    dS = -F_A*S + w*R + b*N +w*V - v*N
     dI = F_A*S + F_V*V - sigma*I
     dR = sigma*I - w*R
     dItotal = F_A*S + F_V*V
-    dV = v*N/d - F_V*V - w*V
+    dV = v*N - F_V*V - w*V
     
     return(list(c(dS,dI,dR,dItotal,dV)))
   }
@@ -1487,11 +1486,11 @@ sir_model_B <-function(time,state,parameters){
     F_B = beta*(I/N)*((N-R-V)/N)
     F_V = rr*F_B
     w = 1/Dur
-    dS = -F_B*S + w*R + b*N +w*V - v*N/d
+    dS = -F_B*S + w*R + b*N +w*V - v*N
     dI = F_B*S + F_V*V - sigma*I
     dR = sigma*I - w*R
     dItotal = F_B*S + F_V*V
-    dV = v*N/d - F_V*V - w*V
+    dV = v*N - F_V*V - w*V
     
     return(list(c(dS,dI,dR,dItotal,dV)))
   }
@@ -1623,9 +1622,9 @@ US_Population = c(309300000,311600000,313900000,316100000,318400000,
 CDC_cases = c(21000000,9300000,34000000,30000000,30000000,
               24000000,29000000,45000000,36000000,38000000)
 `95%LL_cases` = c(20000000,8700000,32000000,28000000,29000000,
-            20000000,25000000,39000000,31000000,34000000) 
+                  20000000,25000000,39000000,31000000,34000000) 
 `95%UL_cases` = c(25000000,12000000,38000000,33000000,33000000,
-            33000000,45000000,58000000,45000000,47000000)
+                  33000000,45000000,58000000,45000000,47000000)
 
 # Estimate by conventional SIR model
 Classical_SIR_cases = as.data.frame(t(print(burden_classicalSIR_V_cases[365,c(6:15)])))
@@ -1669,7 +1668,7 @@ write.csv(Influenza, file = "6D_Influenza_DiseaseBurden_Projection.csv")
 
 par(mar=c(5.9, 4.9, 4.9, 8.9), xpd=TRUE)
 plot(Influenza$Year,Influenza$CDC_proprotion, type="b",pch=15,
-     ylab = "Proportion of population, %", ylim = c(0,30),
+     ylab = "Proportion of population, %", ylim = c(0,100),
      xlab = "Year",xlim = c(2010,2019))
 lines(Influenza$Year, Influenza$`95%LL_proportion`, type = "b", pch=18)
 lines(Influenza$Year, Influenza$`95%UL_proportion`, type = "b", pch=17)
@@ -1684,6 +1683,7 @@ legend("topright",inset=c(-0.4,0),cex=0.8,
        pch = c(16,17,15,18,16,16))
 
 #************************ THE END*******************************
+
 
 # references
 citation()
