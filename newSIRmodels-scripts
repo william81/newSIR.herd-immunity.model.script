@@ -1197,6 +1197,13 @@ write.csv(VMfinal_B, file = "5I_ModelB_VaccineModel_v0.1.csv")
 
 # @@@@@@@@@@@@@@ seasonal influenza in US @@@@@@@@@@@@@@@@@@
 
+# @@@@@@@@@@@@@@ Disclaimers  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# The simulation below does not aim to capture the actual dynamics of seasonal influenza in US.
+# It aims to demonstrate differences between the conventional SIR model and newly proposed models.
+# Users may modify the parameters during the simulation to obtain different projections.
+# Therefore, projection may be different from the article due to different parameters used in the simulations.
+# @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
 # WITH Vaccination #####
 
 # Seasonal Influenza, R0 = 1.3
